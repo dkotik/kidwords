@@ -2,6 +2,12 @@
 Package kidwords provides data encoding accessible to children.
 
 Use it to create passwords and paper keys.
+
+## Inspired By
+
+- [Horcrux][horcrux]
+
+horcrux: https://github.com/jesseduffield/horcrux/tree/master
 */
 package kidwords
 
