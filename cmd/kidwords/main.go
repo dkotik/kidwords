@@ -9,6 +9,7 @@ import (
 
 	"github.com/dkotik/kidwords"
 	"github.com/dkotik/kidwords/shamir"
+	"github.com/dkotik/kidwords/tgrid"
 	"github.com/spf13/pflag"
 )
 
@@ -46,7 +47,20 @@ func main() {
 		if quorum != nil {
 			input := strings.Join(words, " ")
 			// shards, err := shamirSplit([]byte(input), uint8(*quorum))
-			shards, err := shamir.Split([]byte(input), 8, int(*quorum))
+			shards, err := shamir.Split([]byte(input), 12, int(*quorum))
+			if err != nil {
+				panic(err)
+			}
+
+			i := 0
+			grid, err := tgrid.NewGrid(4, 3, func() (tgrid.Cell, error) {
+				words, err := kidwords.FromBytes(shards[i])
+				if err != nil {
+					return nil, err
+				}
+				i++
+				return tgrid.NewCellFromBytes(words), nil
+			})
 			if err != nil {
 				panic(err)
 			}
@@ -62,6 +76,7 @@ func main() {
 				if err != nil {
 					panic(err)
 				}
+				fmt.Printf("#%d: %d\n", i+1, int(compressed[len(compressed)-1]))
 				fmt.Printf("#%d: %s\n", i+1, words)
 			}
 			fmt.Printf("========== PICK ANY %d ===========\n", *quorum)

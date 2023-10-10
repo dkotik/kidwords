@@ -22,7 +22,9 @@ kidwords --help
 
 ### Key Splitting
 
-The secret is compressed using Zstd algorithm before getting split into eight shards. Quorum is set using `--quorum=3` flag. The number of shards is limited to eight in order to use additional 13 bites for an error detection code. The shard ordinal and the error detection code are expressed as two additional words appended to the end of each shard.
+The secret is compressed using Zstd algorithm before getting split into eight shards. Quorum is set using `--quorum=3` flag.
+
+> The number of shards is limited to eight in order to use additional 13 bites for an error detection code. The shard ordinal and the error detection code are expressed as two additional words appended to the end of each shard. (This is wrong - the last byte encodes a random shard ordinal from 0-255)
 
 When the quorum is set to `3` any three of the shards will be sufficient to recover the secret. If the quorum is set to `8`, every single shard will be required.
 
