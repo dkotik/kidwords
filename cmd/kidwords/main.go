@@ -53,33 +53,33 @@ func main() {
 			}
 
 			i := 0
-			grid, err := tgrid.NewGrid(4, 3, func() (tgrid.Cell, error) {
+			grid, err := tgrid.NewGrid(4, 3, func() (*tgrid.Cell, error) {
 				words, err := kidwords.FromBytes(shards[i])
 				if err != nil {
 					return nil, err
 				}
 				i++
-				return tgrid.NewCellFromBytes(words), nil
+				return tgrid.NewCellFromBytes([]byte(words), 18), nil
 			})
 			if err != nil {
 				panic(err)
 			}
 
-			fmt.Println("========== SHARDS ===========")
-			for i, shard := range shards {
-				compressed := []byte(shard)
-				// compressed, err := compress([]byte(shard))
-				// if err != nil {
-				// 	panic(err)
-				// }
-				words, err := kidwords.FromBytes(compressed)
-				if err != nil {
-					panic(err)
-				}
-				fmt.Printf("#%d: %d\n", i+1, int(compressed[len(compressed)-1]))
-				fmt.Printf("#%d: %s\n", i+1, words)
+			fmt.Printf(" 🔑 Pick any %d shards:\n", *quorum)
+			if _, err = grid.Write(os.Stdout); err != nil {
+				panic(err)
 			}
-			fmt.Printf("========== PICK ANY %d ===========\n", *quorum)
+
+			// for i, shard := range shards {
+			// 	compressed := []byte(shard)
+			// 	words, err := kidwords.FromBytes(compressed)
+			// 	if err != nil {
+			// 		panic(err)
+			// 	}
+			// 	fmt.Printf("#%d: %d\n", i+1, int(compressed[len(compressed)-1]))
+			// 	fmt.Printf("#%d: %s\n", i+1, words)
+			// }
+			fmt.Printf("Versioned key recovery command: go run github.com/dkotik/kidwords/cmd/kidwords@%s recover\n", commit)
 			// output, err := kidwords.FromString(input)
 			return
 		}

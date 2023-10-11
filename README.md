@@ -1,16 +1,38 @@
-# Kid Words, Alpha
+# Kid Words, _Alpha_
 
-Data encoding accessible to children for generating passwords and paper keys or splitting them into shards using Shamir's Secret Sharing algorithm.
+Provides durable and accessible paper key encoding that children can use.
+
+Printable paper keys are occasionally used as the last resort for recovering account access. They increase security by empowering a user with the ability to wrestle control of a compromised account from an attacker.
+
+Most paper keys are encoded using BIP39 convention into a set of words. The final few words encode the integrity of the key with a cyclical redundancy check. When printed and stored, such keys are not durable because they can be lost to minor physical damage.
+
+Kid Words package or command line tool increases key durability by splitting the key using [Shamir's Secret Sharing](https://en.wikipedia.org/wiki/Shamir%27s_secret_sharing) algorithm into shards and encoding each shard using a dictionary of 256 four-letter English nouns.
+
+## Benefits
+
+- Keys can be recovered from partially damaged paper.
+- Shards can be transmitted and memorized by children.
+- Shards are easier to speak over poor radio or telephone connection, which can save time during an emergency.
+- Key shards can be hidden in several physical locations by cutting the paper into pieces. Once a configurable quorum of shards, three by default, is gathered back, the key can be restored.
+- Shards can easily be obfuscated by sequencing:
+  - toys or books on a shelf
+  - pencil scribbles on paper
+  - objects or signs in a Minecraft world
+  - emojis
+- Command line tool can apply all of the above benefits to:
+  - important passwords to rarely accessed accounts that do not support paper keys
+  - conventional BIP39 keys
 
 ## Release Checklist
 
-- [ ] Add Shamir's Secret Sharing key splitting.
+- [ ] Compress the key before splitting.
 - [ ] Add Shamir's Secret Sharing key re-combination.
 - [ ] Harden Shamir's Secret Sharing algorithm with `mod Prime`.
   - See https://en.wikipedia.org/wiki/Shamir%27s_secret_sharing
   - Another alternative implementation uses prime
   - Prime should be configurable
 - [ ] Add HTML SeparatorFunc.
+- [ ] Add Emoji dictionary
 
 ## Command Line Tool
 
