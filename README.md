@@ -25,7 +25,6 @@ Kid Words package or command line tool increases key durability by splitting the
 
 ## Release Checklist
 
-- [ ] Compress the key before splitting.
 - [ ] Add Shamir's Secret Sharing key re-combination.
 - [ ] Harden Shamir's Secret Sharing algorithm with `mod Prime`.
   - See https://en.wikipedia.org/wiki/Shamir%27s_secret_sharing
