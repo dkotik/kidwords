@@ -1,120 +1,74 @@
+/*
+Package main is a command line utility for encoding durable and accessible paper keys.
+*/
 package main
 
 import (
-	"bufio"
 	"fmt"
 	"os"
-	"os/signal"
-	"strings"
 
-	"github.com/dkotik/kidwords"
-	"github.com/dkotik/kidwords/shamir"
-	"github.com/dkotik/kidwords/tgrid"
-	"github.com/spf13/pflag"
+	"runtime/debug"
+
+	"github.com/urfave/cli/v2"
 )
 
-var (
-	stdin   = pflag.Bool("stdin", false, "use data from session standard input")
-	intmod  = pflag.BoolP("integer", "i", false, "treat text as unsigned integer")
-	reverse = pflag.BoolP("reverse", "r", false, "recover encoded data")
-	quorum  = pflag.UintP("quorum", "q", 0, "split output into Shamir Secret Sharing shards")
-	help    = pflag.BoolP("help", "h", false, "display help message")
-)
+//go:generate go run -tags=generate version.go
 
-func output(b []byte) {
-	fmt.Println(kidwords.FromBytes(b))
-}
-
-func translate(s string) {
-	b, err := kidwords.ToBytes(s)
-	if err != nil {
-		panic(err)
+var commit = func() string {
+	if info, ok := debug.ReadBuildInfo(); ok {
+		for _, setting := range info.Settings {
+			if setting.Key == "vcs.revision" {
+				return setting.Value
+			}
+		}
 	}
-	fmt.Println(string(b))
-}
+
+	return "latest"
+}()
 
 func main() {
-	pflag.Parse()
+	if err := (&cli.App{
+		Name:    "kidwords",
+		Usage:   "durable and accessible paper key codec\n<https://github.com/dkotik/kidwords>",
+		Version: fmt.Sprintf("%s-%s", version, commit),
 
-	if *help {
-		fmt.Fprint(os.Stderr, "kidwords: Paper key encoder and decoder.\n\n  kidwords [WORD1] [WORD2] ...\n\n")
-		pflag.PrintDefaults()
-		return
-	}
-
-	words := pflag.Args()
-	if len(words) > 0 {
-		if quorum != nil {
-			input := strings.Join(words, " ")
-			// shards, err := shamirSplit([]byte(input), uint8(*quorum))
-			shards, err := shamir.Split([]byte(input), 12, int(*quorum))
-			if err != nil {
-				panic(err)
-			}
-
-			i := 0
-			grid, err := tgrid.NewGrid(4, 3, func() (*tgrid.Cell, error) {
-				words, err := kidwords.FromBytes(shards[i])
-				if err != nil {
-					return nil, err
-				}
-				i++
-				return tgrid.NewCellFromBytes([]byte(words), 18), nil
-			})
-			if err != nil {
-				panic(err)
-			}
-
-			fmt.Printf(" 🔑 Pick any %d shards:\n", *quorum)
-			if _, err = grid.Write(os.Stdout); err != nil {
-				panic(err)
-			}
-
-			// for i, shard := range shards {
-			// 	compressed := []byte(shard)
-			// 	words, err := kidwords.FromBytes(compressed)
-			// 	if err != nil {
-			// 		panic(err)
-			// 	}
-			// 	fmt.Printf("#%d: %d\n", i+1, int(compressed[len(compressed)-1]))
-			// 	fmt.Printf("#%d: %s\n", i+1, words)
-			// }
-			fmt.Printf("Versioned key recovery command: go run github.com/dkotik/kidwords/cmd/kidwords@%s recover\n", commit)
-			// output, err := kidwords.FromString(input)
-			return
-		}
-
-		if *reverse {
-			translate(strings.Join(words, " "))
-			return
-		}
-
-		for _, take := range words {
-			output([]byte(take))
-		}
-		return
-	}
-
-	c := make(chan os.Signal, 1)
-	signal.Notify(c, os.Interrupt, os.Kill)
-	in := make(chan string)
-	go func() {
-		scanner := bufio.NewScanner(os.Stdin)
-		for scanner.Scan() {
-			in <- scanner.Text()
-		}
-	}()
-
-	for {
-		select {
-		case <-c:
-			return
-		case value := <-in:
-			if *reverse {
-				translate(value)
-				continue
-			}
-			output([]byte(value))
-		}
+		HideHelp:             false,
+		HideVersion:          false,
+		EnableBashCompletion: true,
+		Suggest:              true,
+		Commands: []*cli.Command{
+			split,
+			combine,
+			encode,
+			decode,
+		},
+	}).Run(os.Args); err != nil {
+		fmt.Printf("Error: %s.\n", err.Error())
+		os.Exit(1)
 	}
 }
+
+// func main() {
+// 	c := make(chan os.Signal, 1)
+// 	signal.Notify(c, os.Interrupt, os.Kill)
+// 	in := make(chan string)
+// 	go func() {
+// 		scanner := bufio.NewScanner(os.Stdin)
+// 		for scanner.Scan() {
+// 			in <- scanner.Text()
+// 		}
+// 	}()
+//
+// 	for {
+// 		select {
+// 		case <-c:
+// 			return
+// 		case value := <-in:
+// 			if *reverse {
+// 				translate(value)
+// 				continue
+// 			}
+// 			output([]byte(value))
+// 		}
+// 	}
+// }

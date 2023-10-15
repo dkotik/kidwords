@@ -16,6 +16,7 @@ import (
 	"io"
 )
 
+// Grid is an ASCII rendering of table data.
 type Grid []Row
 
 func NewGrid(columns, rows int, from CellGenerator) (Grid, error) {

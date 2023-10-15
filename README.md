@@ -2,6 +2,8 @@
 
 Provides durable and accessible paper key encoding that children can use.
 
+**Warning: alpha version is not stable and subject to iteration!**
+
 Printable paper keys are occasionally used as the last resort for recovering account access. They increase security by empowering a user with the ability to wrestle control of a compromised account from an attacker.
 
 Most paper keys are encoded using BIP39 convention into a set of words. The final few words encode the integrity of the key with a cyclical redundancy check. When printed and stored, such keys are not durable because they can be lost to minor physical damage.
@@ -25,12 +27,10 @@ Kid Words package or command line tool increases key durability by splitting the
 
 ## Release Checklist
 
-- [ ] Add Shamir's Secret Sharing key re-combination.
 - [ ] Harden Shamir's Secret Sharing algorithm with `mod Prime`.
   - See https://en.wikipedia.org/wiki/Shamir%27s_secret_sharing
   - Another alternative implementation uses prime
   - Prime should be configurable
-- [ ] Add HTML SeparatorFunc.
 - [ ] Add Emoji dictionary
 
 ## Command Line Tool
@@ -49,16 +49,70 @@ The secret is compressed using Zstd algorithm before getting split into eight sh
 
 When the quorum is set to `3` any three of the shards will be sufficient to recover the secret. If the quorum is set to `8`, every single shard will be required.
 
-## Library
+## Using as Library
 
 ```go
-// In shell: $ go get github.com/dkotik/kidwords@latest
+
+import (
+  "fmt"
+  "os"
+
+  // To install the library run shell command:
+  //
+  // $ go get github.com/dkotik/kidwords@latest
+  "github.com/dkotik/kidwords"
+  "github.com/dkotik/kidwords/shamir"
+)
 
 func main() {
-  w, err := kidwords.NewWriter(os.Stdout)
+  // break a secret key into shards
+  shards, err := kidwords.Split(
+    []byte("secret paper key"), // encoding target
+    12,                         // number of shards
+    4,                          // quorum of shards to recover target
+  )
   if err != nil {
     panic(err)
   }
-  _, _ = w.Write([]byte("test")) // will output words  
+  if _, err = shards.Grid(
+    3,  // number of table columns
+    18, // number of characters to wrap the text at
+  ).Write(os.Stdout); err != nil {
+    panic(err)
+  }
+
+  // reconstitute the key back using a quorum of four shards
+  key, err := shamir.Combine(shards[0:4])
+  if err != nil {
+    panic(err)
+  }
+  fmt.Println(string(key))
+  // Output: secret paper key
 }
+```
+
+## Using as Command Line Tool
+
+```sh
+$ go install github.com/dkotik/kidwords@latest
+$ kidwords split paperKey
+🔑 Pick any 4 shards:
+┌──────────────╥──────────────╥──────────────┐
+│farm line belt║line hall cash║view home shot│
+│beer crab pity║trap loot site║room turn tale│
+│hour fund fuel║head flag pool║bank wind deal│
+╞══════════════╬══════════════╬══════════════╡
+│line hall cash║view home shot║help dirt turn│
+│trap loot site║room turn tale║goat coat heir│
+│head flag pool║bank wind deal║moss iron tour│
+╞══════════════╬══════════════╬══════════════╡
+│view home shot║help dirt turn║golf tape font│
+│room turn tale║goat coat heir║pear debt dust│
+│bank wind deal║moss iron tour║lake urge bush│
+╞══════════════╬══════════════╬══════════════╡
+│help dirt turn║golf tape font║wish risk cold│
+│goat coat heir║pear debt dust║trap room card│
+│moss iron tour║lake urge bush║firm moon root│
+└──────────────╨──────────────╨──────────────┘
+$ go run github.com/dkotik/kidwords/cmd/kidwords@latest combine
 ```

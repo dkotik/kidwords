@@ -28,11 +28,11 @@ func ExampleFromBytes() {
 	fmt.Println(
 		FromBytes([]byte("marvel")),
 	)
-	// Output: hill golf hush itch half hero <nil>
+	// Output: hole gold hush item half hint <nil>
 }
 
 func ExampleToBytes() {
-	b, err := ToBytes("  hill - golf hush itch ; half hero ")
+	b, err := ToBytes("  hole gold hush item half hint ")
 	fmt.Println(string(b), err)
 	// Output: marvel <nil>
 }
