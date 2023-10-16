@@ -3,7 +3,7 @@ module github.com/dkotik/kidwords/cmd/kidwords
 go 1.21.0
 
 require (
-	github.com/dkotik/kidwords v0.0.2
+	github.com/dkotik/kidwords v0.0.3
 	github.com/urfave/cli/v2 v2.25.7
 	golang.org/x/crypto v0.13.0
 )
