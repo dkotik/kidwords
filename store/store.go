@@ -20,4 +20,5 @@ type Store interface {
 	Create(ctx context.Context, p *PaperKey) error
 	RetrieveAll(ctx context.Context, owner string) ([]*PaperKey, error)
 	Delete(ctx context.Context, id string) error
+	DeleteByOwner(ctx context.Context, owner string) error
 }

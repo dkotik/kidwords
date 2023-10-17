@@ -2,9 +2,11 @@ package store
 
 import (
 	"bytes"
+	"crypto/rand"
 	"encoding/base64"
 	"errors"
 	"fmt"
+	"io"
 	"strconv"
 	"strings"
 
@@ -12,10 +14,10 @@ import (
 )
 
 const (
-	HashArgonKeyLength  = 128
-	HashArgonTimeCost   = 1
-	HashArgonMemoryCost = 64 * 1024 // recommended by x/crypto/argon2
-	HashArgonThreads    = 4
+	DefaultArgonKeyLength  = 128
+	DefaultArgonTimeCost   = 1
+	DefaultArgonMemoryCost = 64 * 1024 // recommended by x/crypto/argon2
+	DefaultArgonThreads    = 4
 )
 
 // ArgonHash is a parameterized salted hash used for storing keys.
@@ -29,6 +31,44 @@ type ArgonHash struct {
 	Secret          []byte
 }
 
+// NewArgonHash creates an Argon2id hash using default parameters.
+func NewArgonHash(key []byte) (*ArgonHash, error) {
+	return NewCustomArgonHash(
+		key,
+		DefaultArgonTimeCost,
+		DefaultArgonMemoryCost,
+		DefaultArgonThreads,
+	)
+}
+
+// NewCustomArgonHash creates an Argon hash.
+func NewCustomArgonHash(
+	key []byte,
+	timeCost uint32,
+	memoryCost uint32,
+	parallelThreads uint8,
+) (*ArgonHash, error) {
+	salt := &bytes.Buffer{}
+	if _, err := io.CopyN(salt, rand.Reader, DefaultArgonKeyLength); err != nil {
+		return nil, err
+	}
+	return &ArgonHash{
+		Type:            "argon2id",
+		Version:         19,
+		TimeCost:        timeCost,
+		MemoryCost:      memoryCost,
+		ParallelThreads: parallelThreads,
+		Salt:            salt.Bytes(),
+		Secret: argon2.Key(
+			key,
+			salt.Bytes(),
+			timeCost,
+			memoryCost,
+			parallelThreads,
+			DefaultArgonKeyLength),
+	}, nil
+}
+
 // Match hashes the given key using [ArgonHash] parameters and compares the result with [ArgonHash.Secret].
 func (a *ArgonHash) Match(key []byte) (bool, error) {
 	switch a.Type {
@@ -39,7 +79,7 @@ func (a *ArgonHash) Match(key []byte) (bool, error) {
 			a.TimeCost,
 			a.MemoryCost,
 			a.ParallelThreads,
-			HashArgonKeyLength)
+			DefaultArgonKeyLength)
 		return bytes.Compare(hash, a.Secret) == 0, nil
 	case "argon2id":
 		hash := argon2.IDKey(
@@ -48,7 +88,7 @@ func (a *ArgonHash) Match(key []byte) (bool, error) {
 			a.TimeCost,
 			a.MemoryCost,
 			a.ParallelThreads,
-			HashArgonKeyLength)
+			DefaultArgonKeyLength)
 		return bytes.Compare(hash, a.Secret) == 0, nil
 	default:
 		return false, fmt.Errorf("hash type %q is not supported", a.Type)
