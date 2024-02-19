@@ -31,6 +31,7 @@ Kid Words package or command line tool increases key durability by splitting the
   - See https://en.wikipedia.org/wiki/Shamir%27s_secret_sharing
   - Another alternative implementation uses prime
   - Prime should be configurable?
+- [ ] Implement modular HTTP service using https://templ.guide, HTMX, and https://github.com/mazznoer/csscolorparser for OKLCH colors, Zombie SQLite C-Go-less driver
 - [ ] finish Argon hashing
 - [ ] finish SQL store
 - [ ] add BIP39 converter
