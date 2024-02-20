@@ -104,15 +104,22 @@ type SecretRepository interface {
 	// RetrieveSecret(context.Context, string, string) (*ArgonSecret, error)
 	UpdateSecret(ctx context.Context, userID, id, name, description string) error
 	DeleteSecret(context.Context, string, string) error
-	ListSecret(context.Context, string) ([]ArgonSecret, error)
+	ListSecrets(context.Context, string) ([]ArgonSecret, error)
 }
 
 type keyValueSecretRepository struct {
-	kv    KeyValueRepository
-	limit int
+	kv KeyValueRepository
+	// limit int
+}
+
+func NewKeyValueSecretRepository(kv KeyValueRepository) SecretRepository {
+	return &keyValueSecretRepository{kv}
 }
 
 func (r *keyValueSecretRepository) decode(b []byte) (secrets []ArgonSecret, err error) {
+	if len(b) < 1 {
+		return nil, nil
+	}
 	if err = json.NewDecoder(bytes.NewReader(b)).Decode(&secrets); err != nil {
 		return nil, err
 	}

@@ -4,20 +4,26 @@ import (
 	"context"
 	"errors"
 	"fmt"
+	"log/slog"
 	"time"
 
 	"zombiezen.com/go/sqlite/sqlitex"
 )
 
-type KeyKeyValueRepository struct {
+type EphemeralKeyKeyValueRepository struct {
 	dbpool    *sqlitex.Pool
+	timeout   time.Duration
 	sqlGet    string
 	sqlSet    string
 	sqlUpdate string
 	sqlDelete string
+	sqlClean  string
 }
 
-func NewKeyKeyValueRepository(withOptions ...Option) (_ *KeyKeyValueRepository, err error) {
+func NewEphemeral(timeout time.Duration, withOptions ...Option) (_ *EphemeralKeyKeyValueRepository, err error) {
+	if timeout < time.Millisecond {
+		return nil, errors.New("timeout cannot be lower than a millisecond")
+	}
 	o := &options{}
 	for _, option := range append(
 		withOptions, WithDefaultTableName(), WithDefaultConnection(),
@@ -50,22 +56,48 @@ func NewKeyKeyValueRepository(withOptions ...Option) (_ *KeyKeyValueRepository, 
 	    first BLOB,
 	    second BLOB,
 	    value BLOB,
+      expiry INTEGER,
       PRIMARY KEY (first, second)
 	  );`, o.Table), nil)
 	if err != nil {
 		return nil, err
 	}
 
-	return &KeyKeyValueRepository{
+	kkv := &EphemeralKeyKeyValueRepository{
 		dbpool:    dbpool,
-		sqlGet:    fmt.Sprintf("SELECT value FROM %s WHERE first=$first AND second=$second;", o.Table),
-		sqlSet:    fmt.Sprintf("INSERT INTO %s (first, second, value) VALUES($first, $second, $value);", o.Table),
-		sqlUpdate: fmt.Sprintf("UPDATE %s SET value=$value WHERE first=$first AND second=$second;", o.Table),
+		sqlGet:    fmt.Sprintf("SELECT value FROM %s WHERE first=$first AND second=$second AND expiry>=$cutoff;", o.Table),
+		sqlSet:    fmt.Sprintf("INSERT INTO %s (first, second, value, expiry) VALUES($first, $second, $value, $expiry);", o.Table),
+		sqlUpdate: fmt.Sprintf("UPDATE %s SET value=$value, expiry=$expiry WHERE first=$first AND second=$second;", o.Table),
 		sqlDelete: fmt.Sprintf("DELETE FROM %s WHERE first=$first AND second=$second;", o.Table),
-	}, nil
+		sqlClean:  fmt.Sprintf("DELETE FROM %s WHERE expiry<$cutoff;", o.Table),
+	}
+
+	ticker := time.NewTicker(timeout / 2)
+	go func(ctx context.Context, kkv *EphemeralKeyKeyValueRepository, c <-chan time.Time) {
+		var err error
+		for {
+			select {
+			case <-ctx.Done():
+				return
+			case t := <-c:
+				if err = kkv.Clean(ctx, t); err != nil {
+					slog.Default().Error(
+						"failed key-key-value clean up procedure",
+						slog.Any("error", err),
+					)
+				}
+			}
+		}
+	}(context.Background(), kkv, ticker.C)
+
+	return kkv, nil
 }
 
-func (kkv *KeyKeyValueRepository) Get(ctx context.Context, first, second []byte) (result []byte, err error) {
+func (kkv *EphemeralKeyKeyValueRepository) expiry() int64 {
+	return time.Now().Add(kkv.timeout).Unix()
+}
+
+func (kkv *EphemeralKeyKeyValueRepository) Get(ctx context.Context, first, second []byte) (result []byte, err error) {
 	conn := kkv.dbpool.Get(ctx)
 	if conn == nil {
 		return nil, errors.New("no available connection")
@@ -75,6 +107,7 @@ func (kkv *KeyKeyValueRepository) Get(ctx context.Context, first, second []byte)
 	stmt := conn.Prep(kkv.sqlGet)
 	stmt.BindBytes(1, first)
 	stmt.BindBytes(2, second)
+	stmt.BindInt64(3, time.Now().Unix())
 
 	hasRow, err := stmt.Step()
 	if err != nil {
@@ -92,7 +125,7 @@ func (kkv *KeyKeyValueRepository) Get(ctx context.Context, first, second []byte)
 	return result, nil
 }
 
-func (kkv *KeyKeyValueRepository) Set(ctx context.Context, first, second, value []byte) (err error) {
+func (kkv *EphemeralKeyKeyValueRepository) Set(ctx context.Context, first, second, value []byte) (err error) {
 	conn := kkv.dbpool.Get(ctx)
 	if conn == nil {
 		return errors.New("no available connection")
@@ -103,6 +136,7 @@ func (kkv *KeyKeyValueRepository) Set(ctx context.Context, first, second, value 
 	stmt.BindBytes(1, first)
 	stmt.BindBytes(2, second)
 	stmt.BindBytes(3, value)
+	stmt.BindInt64(4, kkv.expiry())
 	_, err = stmt.Step()
 	if err != nil {
 		return err
@@ -110,7 +144,7 @@ func (kkv *KeyKeyValueRepository) Set(ctx context.Context, first, second, value 
 	return stmt.Reset()
 }
 
-func (kkv *KeyKeyValueRepository) Update(ctx context.Context, first, second []byte, update func([]byte) ([]byte, error)) (err error) {
+func (kkv *EphemeralKeyKeyValueRepository) Update(ctx context.Context, first, second []byte, update func([]byte) ([]byte, error)) (err error) {
 	conn := kkv.dbpool.Get(ctx)
 	if conn == nil {
 		return errors.New("no available connection")
@@ -126,6 +160,7 @@ func (kkv *KeyKeyValueRepository) Update(ctx context.Context, first, second []by
 	stmt := conn.Prep(kkv.sqlGet)
 	stmt.BindBytes(1, first)
 	stmt.BindBytes(2, second)
+	stmt.BindInt64(3, time.Now().Unix())
 	hasRows, err := stmt.Step()
 	if err != nil {
 		return err
@@ -143,6 +178,7 @@ func (kkv *KeyKeyValueRepository) Update(ctx context.Context, first, second []by
 		stmt.BindBytes(1, first)
 		stmt.BindBytes(2, second)
 		stmt.BindBytes(3, value)
+		stmt.BindInt64(4, kkv.expiry())
 		_, err = stmt.Step()
 		if err != nil {
 			return err
@@ -172,8 +208,9 @@ func (kkv *KeyKeyValueRepository) Update(ctx context.Context, first, second []by
 
 	stmt = conn.Prep(kkv.sqlUpdate)
 	stmt.BindBytes(1, value) // mind the order!
-	stmt.BindBytes(2, first)
-	stmt.BindBytes(3, second)
+	stmt.BindInt64(2, kkv.expiry())
+	stmt.BindBytes(3, first)
+	stmt.BindBytes(4, second)
 
 	_, err = stmt.Step()
 	if err != nil {
@@ -183,7 +220,7 @@ func (kkv *KeyKeyValueRepository) Update(ctx context.Context, first, second []by
 	return stmt.Reset()
 }
 
-func (kkv *KeyKeyValueRepository) Delete(ctx context.Context, first, second []byte) (err error) {
+func (kkv *EphemeralKeyKeyValueRepository) Delete(ctx context.Context, first, second []byte) (err error) {
 	conn := kkv.dbpool.Get(ctx)
 	if conn == nil {
 		return errors.New("no available connection")
@@ -193,6 +230,20 @@ func (kkv *KeyKeyValueRepository) Delete(ctx context.Context, first, second []by
 	stmt := conn.Prep(kkv.sqlDelete)
 	stmt.BindBytes(1, first)
 	stmt.BindBytes(2, second)
+
+	_, err = stmt.Step()
+	return err
+}
+
+func (kkv *EphemeralKeyKeyValueRepository) Clean(ctx context.Context, upto time.Time) (err error) {
+	conn := kkv.dbpool.Get(ctx)
+	if conn == nil {
+		return errors.New("no available connection")
+	}
+	defer kkv.dbpool.Put(conn)
+
+	stmt := conn.Prep(kkv.sqlClean)
+	stmt.BindInt64(1, upto.Unix())
 
 	_, err = stmt.Step()
 	return err
