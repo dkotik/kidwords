@@ -1,12 +1,44 @@
 /*
-Package service provides an authenticated portal for managing paper keys and regular passwords.
+Package htservice provides an authenticated portal for managing paper keys and regular passwords.
 */
-package service
+package htservice
 
 import (
 	"context"
+	"html/template"
 	"io"
+
+	_ "embed" // for templates
 )
+
+//go:embed templates.html
+var rawTemplates string
+
+var (
+	templates    *template.Template
+	pageTemplate *template.Template
+)
+
+type htmlHead struct {
+	Locale string
+	Title  string
+}
+
+// func (p *htmlPage) Encode(
+//   w http.ResponseWriter,
+//   r *http.Request,
+//   code int,
+//   v any,
+// ) error {
+//   // Locale  string
+//   // Title   string
+//   // Content template.HTML
+// }
+
+func init() {
+	templates = template.Must(template.New("kidwords").Parse(rawTemplates))
+	pageTemplate = templates.Lookup("page")
+}
 
 type Component interface {
 	Render(context.Context, io.Writer) error

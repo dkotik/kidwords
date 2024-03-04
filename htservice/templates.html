@@ -1,0 +1,24 @@
+{{ define `header` }}
+<html lang="{{ .Locale }}">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width,initial-scale=1" />
+    <title>{{ .Title }}</title>
+    <style>
+      /* TODO: write out styles together with darkmode */
+    </style>
+  </head>
+  <body>
+    <main>
+      <h1>{{ .Title }}</h1>
+{{ end }}
+{{ define `footer` }}</main></body></html>{{ end }}
+
+{{ define `list` }}
+  {{- template `header` .Head -}}
+  {{- range .Secrets -}}
+    <h1>???</h1>
+    <p>{{ .Name }} {{ .Description }}</p>
+  {{- end -}}
+  {{- template `footer` -}}
+{{ end }}

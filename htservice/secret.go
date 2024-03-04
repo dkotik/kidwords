@@ -1,4 +1,4 @@
-package service
+package htservice
 
 import (
 	"bytes"
@@ -34,6 +34,17 @@ type ArgonSecret struct {
 	ParallelStreams uint8
 	Version         uint8 // 19
 	Created         time.Time
+}
+
+func (a *ArgonSecret) Label() ArgonSecretLabel {
+	return ArgonSecretLabel{
+		ID:          a.ID,
+		Type:        a.Type,
+		Name:        a.Name,
+		Description: a.Description,
+		Version:     a.Version,
+		Created:     a.Created,
+	}
 }
 
 type ArgonSecretLabel struct {

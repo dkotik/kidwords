@@ -1,9 +1,9 @@
-package service
+package htservice
 
 import (
 	"testing"
 
-	"github.com/dkotik/kidwords/service/repository/sqlite"
+	"github.com/dkotik/kidwords/htservice/repository/sqlite"
 )
 
 func TestSecretRepository(t *testing.T) {
