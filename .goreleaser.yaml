@@ -1,0 +1,68 @@
+version: 2
+before:
+  hooks:
+    - go generate ./...
+    - go test ./...
+builds:
+  - main: ./cmd/kidwords
+    id: "kidwords"
+    binary: kidwords
+    env:
+      - CGO_ENABLED=0
+    goos:
+      - linux
+      - windows
+      - darwin
+archives:
+  - formats: ["zip"]
+checksum:
+  name_template: "checksums.txt"
+changelog:
+  sort: asc
+  filters:
+    exclude:
+      - "^docs"
+      - "^testdata"
+homebrew_casks:
+  - name: kidwords
+    url:
+      template: "https://github.com/dkotik/kidwords/releases/download/{{ .Tag }}/{{ .ArtifactName }}"
+      verified: github.com/dkotik/kidwords/
+      # Never `using: ":homebrew_curl"` as it requires installing homebrew
+      # curl before the cask itself can be installed
+      # MacOS comes with curl installed already.
+      using: ":homebrew_curl"
+    repository:
+      owner: dkotik
+      name: homebrew-tap
+      branch: main
+    homepage: "https://github.com/dkotik/kidwords"
+    description: "Durable and accessible paper key encoding that children can use."
+    license: "MIT"
+    hooks:
+      post:
+        install: |
+          if OS.mac?
+            system_command "/usr/bin/xattr", args: ["-dr", "com.apple.quarantine", "#{staged_path}/kidwords"]
+          end
+nfpms:
+  - id: kidwords.deb
+    package_name: kidwords
+    formats:
+      - deb
+    vendor: "Dmitry Kotik"
+    homepage: "https://github.com/dkotik/kidwords"
+    maintainer: "Dmitry Kotik <7bt7hnl6f@relay.firefox.com>"
+    description: "Durable and accessible paper key encoding that children can use."
+    license: "MIT" # required together with the copyright file below
+    contents:
+      - src: ./LICENSE
+        dst: /usr/share/doc/kidwords/copyright
+        file_info:
+          mode: 0644
+signs:
+  - id: cosign
+    cmd: cosign
+    args: ["sign-blob", "--bundle", "${signature}", "${artifact}", "--yes"]
+    artifacts: checksum
+    signature: "${artifact}.sigstore.json"
