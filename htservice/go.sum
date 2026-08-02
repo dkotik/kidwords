@@ -2,6 +2,8 @@ github.com/dkotik/htadaptor v0.0.13 h1:nGIT+N7uQz4BKuvuaiCr5NjjLwqwCzdtqALNqdJEE
 github.com/dkotik/htadaptor v0.0.13/go.mod h1:Omx2WFTabaON8ObynpXX2JdahY8iFU/zPZQtCJaaG5M=
 github.com/dkotik/htadaptor v0.1.5 h1:lZdhH2zs952lI3aowZwdqWdZrSEmuoSGfemUYSVq8cQ=
 github.com/dkotik/htadaptor v0.1.5/go.mod h1:XDho0f3OUod/FOFlc8yfVVSlJVClLXGAf4SCnSoPbwo=
+github.com/dkotik/kidwords v0.0.4 h1:AgHlmfU4iZQ+n2xVH34H36z2d1qFP2Q0yzMzr1jeE4w=
+github.com/dkotik/kidwords v0.0.4/go.mod h1:KrlAMq7415VpujEf5gDQVYaTWNiuR8st5jZYyueyVHo=
 github.com/dustin/go-humanize v1.0.1 h1:GzkhY7T5VNhEkwH0PVJgjz+fX1rhBrR7pRT3mDkpeCY=
 github.com/dustin/go-humanize v1.0.1/go.mod h1:Mu1zIs6XwVuF/gI1OepvI0qD18qycQx+mFykh5fBlto=
 github.com/google/uuid v1.6.0 h1:NIvaJDMOsjHA8n1jAhLSgzrAzy1Hgr+hNrb57e+94F0=

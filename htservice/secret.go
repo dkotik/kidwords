@@ -8,6 +8,7 @@ import (
 	"encoding/json"
 	"errors"
 	"fmt"
+	"sort"
 	"time"
 
 	"github.com/google/uuid"
@@ -54,6 +55,21 @@ type ArgonSecretLabel struct {
 	Description string
 	Version     uint8
 	Created     time.Time
+}
+
+func NewLabels(secrets []ArgonSecret) []ArgonSecretLabel {
+	total := len(secrets)
+	if total < 1 {
+		return nil
+	}
+	labels := make([]ArgonSecretLabel, total)
+	for i, secret := range secrets {
+		labels[i] = secret.Label()
+	}
+	sort.Slice(labels, func(a, b int) bool {
+		return labels[a].Created.Before(labels[b].Created)
+	})
+	return labels
 }
 
 func NewArgonSecret(name, description, secret string) (*ArgonSecret, error) {

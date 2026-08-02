@@ -10,31 +10,24 @@ import (
 	"github.com/nicksnyder/go-i18n/v2/i18n"
 )
 
-var listTitle = &i18n.LocalizeConfig{
+var updateTitle = &i18n.LocalizeConfig{
 	DefaultMessage: &i18n.Message{
-		ID:    "listPaperKeysTitle",
-		Other: "Paper Keys",
+		ID:    "updatePaperKeyTitle",
+		Other: "Update Paper Key",
 	},
 }
 
-type listResponse struct {
-	Secrets []ArgonSecretLabel
-	lc      *i18n.Localizer
+type updateRequest struct {
+	ID          string
+	Name        string
+	Description string
 }
 
-func (l *listResponse) Head() (*htmlHead, error) {
-	title, locale, err := l.lc.LocalizeWithTag(listTitle)
-	if err != nil {
-		return nil, err
-	}
-	base, _ := locale.Base()
-	return &htmlHead{
-		Title:  title,
-		Locale: base.String(),
-	}, nil
+func (r *updateRequest) Validate(ctx context.Context) error {
+	return nil
 }
 
-func NewPersonalSecretsView(r SecretRepository) (http.Handler, error) {
+func NewUpdatePersonalSecretView(r SecretRepository) (http.Handler, error) {
 	if r == nil {
 		return nil, errors.New("cannot use a <nil> secrets repository")
 	}
@@ -59,6 +52,6 @@ func NewPersonalSecretsView(r SecretRepository) (http.Handler, error) {
 				lc:      lc,
 			}, nil
 		},
-		htadaptor.WithTemplate(templates.Lookup("list")),
+		htadaptor.WithTemplate(templates.Lookup("update")),
 	)
 }

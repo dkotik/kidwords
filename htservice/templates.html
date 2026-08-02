@@ -5,20 +5,77 @@
     <meta name="viewport" content="width=device-width,initial-scale=1" />
     <title>{{ .Title }}</title>
     <style>
-      /* TODO: write out styles together with darkmode */
+      :root {
+        --base: #cfcfcf;
+        --text: #212121;
+      }
+
+      @media (prefers-color-scheme: dark) {
+        :root {
+          --base: #212121;
+          --text: #cfcfcf;
+        }
+      }
+
+      html {
+        color-scheme: dark light;
+      }
+
+      :root:has(#theme [value="light"]:checked) {
+        color-scheme: light;
+        --base: #cfcfcf;
+        --text: #212121;
+      }
+
+      :root:has(#theme [value="dark"]:checked) {
+        color-scheme: dark;
+        --base: #212121;
+        --text: #cfcfcf;
+      }
+
+      body {
+        color: var(--text);
+        background-color: var(--base);
+      }
+
+      body {
+        font-family: system-ui;
+        font-size: 1.5rem;
+      }
     </style>
   </head>
   <body>
     <main>
       <h1>{{ .Title }}</h1>
+      <label>Theme:
+        <select id="theme">
+          <option value="system">System</option>
+          <option value="light">Light</option>
+          <option value="dark">Dark</option>
+        </select>
+      </label>
 {{ end }}
 {{ define `footer` }}</main></body></html>{{ end }}
+
+{{ define `create` }}
+  {{- template `header` .Head -}}
+  {{- range .Shards -}}
+    <p>Shard: {{ . }}</p>
+  {{- end -}}
+  {{- template `footer` -}}
+{{ end }}
+
+{{ define `update` }}
+  {{- template `header` .Head -}}
+  UPDATE FORM
+  {{- template `footer` -}}
+{{ end }}
 
 {{ define `list` }}
   {{- template `header` .Head -}}
   {{- range .Secrets -}}
-    <h1>???</h1>
-    <p>{{ .Name }} {{ .Description }}</p>
+    <h2>{{ .Name }}</h2>
+    <p> {{ .Description }}</p>
   {{- end -}}
   {{- template `footer` -}}
 {{ end }}

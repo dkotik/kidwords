@@ -4,6 +4,7 @@ go 1.22.0
 
 require (
 	github.com/dkotik/htadaptor v0.1.5 // indirect
+	github.com/dkotik/kidwords v0.0.4 // indirect
 	github.com/dustin/go-humanize v1.0.1 // indirect
 	github.com/google/uuid v1.6.0 // indirect
 	github.com/mattn/go-isatty v0.0.16 // indirect

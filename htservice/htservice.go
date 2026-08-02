@@ -6,7 +6,6 @@ package htservice
 import (
 	"context"
 	"html/template"
-	"io"
 
 	_ "embed" // for templates
 )
@@ -38,10 +37,6 @@ type htmlHead struct {
 func init() {
 	templates = template.Must(template.New("kidwords").Parse(rawTemplates))
 	pageTemplate = templates.Lookup("page")
-}
-
-type Component interface {
-	Render(context.Context, io.Writer) error
 }
 
 type KeyValueRepository interface {
@@ -95,9 +90,4 @@ func (a *domainAdaptor) Delete(ctx context.Context, key []byte) error {
 type Service struct {
 	attempts AuthenticationAttemptRepository
 	secrets  SecretRepository
-
-	viewAuthenticationAttempts func([]AuthenticationAttempt) Component
-	viewSecrets                func([]ArgonSecretLabel) Component
-	viewCreateSecret           Component
-	viewAuthenticate           Component
 }
