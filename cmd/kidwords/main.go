@@ -4,15 +4,14 @@ Package main is a command line utility for encoding durable and accessible paper
 package main
 
 import (
+	"context"
 	"fmt"
 	"os"
 
 	"runtime/debug"
 
-	"github.com/urfave/cli/v2"
+	"github.com/urfave/cli/v3"
 )
-
-//go:generate go run -tags=generate version.go
 
 var commit = func() string {
 	if info, ok := debug.ReadBuildInfo(); ok {
@@ -27,22 +26,21 @@ var commit = func() string {
 }()
 
 func main() {
-	if err := (&cli.App{
-		Name:    "kidwords",
-		Usage:   "durable and accessible paper key codec\n<https://github.com/dkotik/kidwords>",
-		Version: fmt.Sprintf("%s-%s", version, commit),
-
-		HideHelp:             false,
-		HideVersion:          false,
-		EnableBashCompletion: true,
-		Suggest:              true,
+	if err := (&cli.Command{
+		Name:                  "kidwords",
+		Usage:                 "durable and accessible paper key codec\n<https://github.com/dkotik/kidwords>",
+		Version:               version(),
+		HideHelp:              false,
+		HideVersion:           false,
+		EnableShellCompletion: true,
+		Suggest:               true,
 		Commands: []*cli.Command{
 			split,
 			combine,
 			encode,
 			decode,
 		},
-	}).Run(os.Args); err != nil {
+	}).Run(context.Background(), os.Args); err != nil {
 		fmt.Printf("Error: %s.\n", err.Error())
 		os.Exit(1)
 	}
@@ -72,3 +70,17 @@ func main() {
 // 		}
 // 	}
 // }
+
+func version() string {
+	v := "dev"
+	if info, ok := debug.ReadBuildInfo(); ok {
+		v = info.Main.Version
+		for _, setting := range info.Settings {
+			if setting.Key == "vcs.revision" {
+				v = v + "-" + setting.Value
+				break
+			}
+		}
+	}
+	return v
+}

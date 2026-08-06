@@ -37,9 +37,29 @@ import (
 	"strings"
 )
 
-//go:generate go run dictionary/generate.go --source dictionary/enNouns.txt --destination dictionary/enNouns.gen.go --variable EnglishFourLetterNouns
-//go:generate go run dictionary/generate.go --source dictionary/enVerbs.txt --destination dictionary/enVerbs.gen.go --variable EnglishFourLetterVerbs
+//go:generate go run dictionary/generate.go --source internal/wordlist/en/nouns.txt --destination dictionary/enNouns.gen.go --variable EnglishFourLetterNouns
+//go:generate go run dictionary/generate.go --source internal/wordlist/en/verbs.txt --destination dictionary/enVerbs.gen.go --variable EnglishFourLetterVerbs
 //go:generate go test . -update
+
+type Codec interface {
+	EncodeBytes([]byte) []byte
+	DecodeBytes([]byte) ([]byte, error)
+	EncodeStream(io.Writer, io.Reader) error
+	DecodeStream(io.Writer, io.Reader, *bytes.Buffer) error
+}
+
+type kidwords struct {
+	// Content Dictionary
+	// Checksum Dictionary
+}
+
+func New() Codec {
+	return nil
+}
+
+func NewWithDictionaries() Codec {
+	return nil
+}
 
 // FromReader translates [io.Reader] stream into Kid Words.
 func FromReader(r io.Reader, withOptions ...WriterOption) (string, error) {

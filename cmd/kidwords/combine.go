@@ -2,6 +2,7 @@ package main
 
 import (
 	"bytes"
+	"context"
 	"fmt"
 	"strings"
 
@@ -11,15 +12,15 @@ import (
 	"github.com/dkotik/kidwords"
 	"github.com/dkotik/kidwords/dictionary"
 	"github.com/dkotik/kidwords/shamir"
-	"github.com/urfave/cli/v2"
+	"github.com/urfave/cli/v3"
 )
 
 var combine = &cli.Command{
 	Name:      "combine",
 	Usage:     "recover the secret from a quorum of Shamir's Secret Sharing shards",
 	ArgsUsage: "\"-\" argument takes standard input",
-	Action: func(c *cli.Context) (err error) {
-		input := strings.Join(c.Args().Slice(), " ")
+	Action: func(ctx context.Context, cmd *cli.Command) (err error) {
+		input := strings.Join(cmd.Args().Slice(), " ")
 		if input == "-" {
 			b := &bytes.Buffer{}
 			if _, err = io.Copy(b, os.Stdin); err != nil {

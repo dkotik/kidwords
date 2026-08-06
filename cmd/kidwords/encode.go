@@ -2,24 +2,25 @@ package main
 
 import (
 	"bytes"
+	"context"
 	"io"
 	"os"
 	"strings"
 
 	"github.com/dkotik/kidwords"
-	"github.com/urfave/cli/v2"
+	"github.com/urfave/cli/v3"
 )
 
 var encode = &cli.Command{
 	Name:      "encode",
 	Usage:     "convert input into simple words",
 	ArgsUsage: "\"-\" argument takes standard input",
-	Action: func(c *cli.Context) error {
+	Action: func(ctx context.Context, cmd *cli.Command) error {
 		w, err := kidwords.NewWriter(os.Stdout)
 		if err != nil {
 			return err
 		}
-		if strings.Join(c.Args().Slice(), " ") == "-" {
+		if strings.Join(cmd.Args().Slice(), " ") == "-" {
 			_, err = io.Copy(w, os.Stdin)
 			return err
 		}

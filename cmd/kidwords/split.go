@@ -1,12 +1,13 @@
 package main
 
 import (
+	"context"
 	"fmt"
 	"os"
 	"strings"
 
 	"github.com/dkotik/kidwords"
-	"github.com/urfave/cli/v2"
+	"github.com/urfave/cli/v3"
 )
 
 var split = &cli.Command{
@@ -19,7 +20,7 @@ var split = &cli.Command{
 			Aliases: []string{"s"},
 			Usage:   "the number of shards to create",
 			Value:   12,
-			Action: func(ctx *cli.Context, n int) error {
+			Action: func(ctx context.Context, cmd *cli.Command, n int) error {
 				if n < 2 || n > 256 {
 					return fmt.Errorf("flag shards value %d out of range[2-256]", n)
 				}
@@ -31,7 +32,7 @@ var split = &cli.Command{
 			Aliases: []string{"q"},
 			Usage:   "the number of shards required to recover the secret",
 			Value:   4,
-			Action: func(ctx *cli.Context, n int) error {
+			Action: func(ctx context.Context, cmd *cli.Command, n int) error {
 				if n < 2 || n > 256 {
 					return fmt.Errorf("flag quorum value %d out of range[2-256]", n)
 				}
@@ -43,7 +44,7 @@ var split = &cli.Command{
 			Aliases: []string{"c"},
 			Usage:   "the number of table columns in the output grid",
 			Value:   3,
-			Action: func(ctx *cli.Context, n int) error {
+			Action: func(ctx context.Context, cmd *cli.Command, n int) error {
 				if n < 1 || n > 12 {
 					return fmt.Errorf("flag columns value %d out of range[1-12]", n)
 				}
@@ -55,7 +56,7 @@ var split = &cli.Command{
 			Aliases: []string{"w"},
 			Usage:   "maximum shard line length",
 			Value:   18,
-			Action: func(ctx *cli.Context, n int) error {
+			Action: func(ctx context.Context, cmd *cli.Command, n int) error {
 				if n < 4 || n > 128 {
 					return fmt.Errorf("flag wrap value %d out of range[4-128]", n)
 				}
@@ -63,14 +64,14 @@ var split = &cli.Command{
 			},
 		},
 	},
-	Action: func(c *cli.Context) error {
-		input := strings.Join(c.Args().Slice(), " ")
+	Action: func(ctx context.Context, cmd *cli.Command) error {
+		input := strings.Join(cmd.Args().Slice(), " ")
 		if input == "-" {
 
 		}
 
-		parts := c.Value("shards").(int)
-		threshold := c.Value("quorum").(int)
+		parts := cmd.Int("shards")
+		threshold := cmd.Int("quorum")
 		shards, err := kidwords.Split(input, parts, threshold)
 		if err != nil {
 			return err
@@ -79,8 +80,8 @@ var split = &cli.Command{
 			return err
 		}
 
-		columns := c.Value("columns").(int)
-		wrap := c.Value("wrap").(int)
+		columns := cmd.Int("columns")
+		wrap := cmd.Int("wrap")
 		if _, err = shards.Grid(columns, wrap).Write(os.Stdout); err != nil {
 			return err
 		}
