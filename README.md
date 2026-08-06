@@ -27,17 +27,16 @@ Kid Words package or command line tool increases key durability by splitting the
 
 ## Development Checklist
 
+- [ ] Add random password generator
 - [ ] Use a separate 256-word alphabet for the checksum bytes.
 - [ ] Harden Shamir's Secret Sharing algorithm with `mod Prime`.
   - See https://en.wikipedia.org/wiki/Shamir%27s_secret_sharing
   - Another alternative implementation uses prime
   - Prime should be configurable?
 - [ ] finish Argon hashing
+- [ ] bump CLI v2->v3
 - [ ] finish SQL store
-- [ ] add BIP39 converter
 - [ ] add Mongo store
-- [ ] Add Emoji dictionary
-- [ ] Add random password generator
 
 ## Using as Library
 

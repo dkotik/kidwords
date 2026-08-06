@@ -4,7 +4,7 @@ before:
     - go generate ./...
     - go test ./...
 builds:
-  - main: ./cmd/kidwords
+  - main: .
     id: "kidwords"
     binary: kidwords
     env:
