@@ -10,18 +10,15 @@ dare
 glow
 copy
 shut
-whip
 mash
 kick
 stab
-pace
 beat
 roam
 tint
 help
 heap
 sift
-peep
 pass
 rush
 swap
@@ -34,11 +31,8 @@ blot
 hold
 grip
 join
-burp
-romp
 hack
 keep
-dupe
 bore
 thaw
 reap
@@ -119,7 +113,6 @@ type
 rise
 cope
 halt
-pare
 term
 curl
 sass
@@ -151,7 +144,6 @@ dote
 play
 dine
 rely
-bang
 heal
 beep
 jump
@@ -161,7 +153,6 @@ flow
 chop
 warp
 meet
-bump
 fail
 plot
 mold
@@ -218,7 +209,6 @@ sigh
 ford
 hate
 need
-fell
 gaze
 sing
 cast
@@ -226,9 +216,6 @@ scar
 emit
 toss
 talk
-bale
-rack
-flap
 calm
 gulp
 thud
@@ -262,3 +249,8 @@ rest
 race
 hear
 bash
+abet
+seep
+tout
+fuze
+cure

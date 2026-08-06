@@ -38,6 +38,7 @@ import (
 )
 
 //go:generate go run dictionary/generate.go --source dictionary/enNouns.txt --destination dictionary/enNouns.gen.go --variable EnglishFourLetterNouns
+//go:generate go run dictionary/generate.go --source dictionary/enVerbs.txt --destination dictionary/enVerbs.gen.go --variable EnglishFourLetterVerbs
 //go:generate go test . -update
 
 // FromReader translates [io.Reader] stream into Kid Words.
