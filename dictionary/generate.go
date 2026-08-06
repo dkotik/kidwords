@@ -5,9 +5,9 @@ List duplicates in two files:
 
 	grep -xFf enNouns.txt enVerbs.txt
 
-Randomize lines and overwrite file:
+Randomize lines:
 
-	shuf -o enVerbs.txt enVerbs.txt
+	sort -R enVerbs.txt > temp.txt
 */
 package main
 

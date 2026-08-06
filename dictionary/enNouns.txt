@@ -349,3 +349,17 @@ ours
 lone
 lime
 tick
+knot
+sack
+vest
+camp
+band
+mass
+slit
+ally
+exit
+bark
+ache
+echo
+hope
+crow
