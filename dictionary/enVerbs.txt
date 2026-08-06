@@ -96,7 +96,6 @@ wade
 find
 ride
 doze
-knit
 weep
 draw
 dash
@@ -261,3 +260,4 @@ jolt
 jest
 oust
 quip
+knit

@@ -12,28 +12,28 @@ import (
 	"os/signal"
 	"syscall"
 
-	"golang.org/x/crypto/ssh/terminal"
+	"golang.org/x/term"
 )
 
 func scanPassword(prompt string) ([]byte, error) {
-	initialTermState, err := terminal.GetState(syscall.Stdin)
+	oldState, err := term.MakeRaw(int(os.Stdin.Fd()))
 	if err != nil {
-		return nil, err
+		panic(err)
 	}
+	defer term.Restore(int(os.Stdin.Fd()), oldState)
 
 	// Restore state in the event of an interrupt.
 	// CITATION: Konstantin Shaposhnikov - https://groups.google.com/forum/#!topic/golang-nuts/kTVAbtee9UA
-	c := make(chan os.Signal)
-	signal.Notify(c, os.Interrupt, os.Kill)
+	c := make(chan os.Signal, 1)
+	signal.Notify(c, os.Interrupt, syscall.SIGINT, syscall.SIGTERM, syscall.SIGHUP, syscall.SIGQUIT)
 	go func() {
 		<-c
-		_ = terminal.Restore(syscall.Stdin, initialTermState)
 		os.Exit(1)
 	}()
 
 	// Now get the password.
 	fmt.Print(prompt)
-	p, err := terminal.ReadPassword(syscall.Stdin)
+	p, err := term.ReadPassword(syscall.Stdin)
 	fmt.Println("")
 	if err != nil {
 		return nil, err

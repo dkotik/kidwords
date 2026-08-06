@@ -21,7 +21,7 @@ var split = &cli.Command{
 			Value:   12,
 			Action: func(ctx *cli.Context, n int) error {
 				if n < 2 || n > 256 {
-					return fmt.Errorf("Flag shards value %d out of range[2-256]", n)
+					return fmt.Errorf("flag shards value %d out of range[2-256]", n)
 				}
 				return nil
 			},
@@ -33,7 +33,7 @@ var split = &cli.Command{
 			Value:   4,
 			Action: func(ctx *cli.Context, n int) error {
 				if n < 2 || n > 256 {
-					return fmt.Errorf("Flag quorum value %d out of range[2-256]", n)
+					return fmt.Errorf("flag quorum value %d out of range[2-256]", n)
 				}
 				return nil
 			},
@@ -45,7 +45,7 @@ var split = &cli.Command{
 			Value:   3,
 			Action: func(ctx *cli.Context, n int) error {
 				if n < 1 || n > 12 {
-					return fmt.Errorf("Flag columns value %d out of range[1-12]", n)
+					return fmt.Errorf("flag columns value %d out of range[1-12]", n)
 				}
 				return nil
 			},
@@ -57,7 +57,7 @@ var split = &cli.Command{
 			Value:   18,
 			Action: func(ctx *cli.Context, n int) error {
 				if n < 4 || n > 128 {
-					return fmt.Errorf("Flag wrap value %d out of range[4-128]", n)
+					return fmt.Errorf("flag wrap value %d out of range[4-128]", n)
 				}
 				return nil
 			},
