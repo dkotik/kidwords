@@ -62,7 +62,7 @@ func ChecksumChop(b []byte) (remainder []byte, ok bool) {
 	if l >= 0 {
 		n, err := h.Write(b[:l])
 		if err == nil && n == l {
-			if bytes.Compare(h.Sum(nil), b[l:]) == 0 {
+			if bytes.Equal(h.Sum(nil), b[l:]) {
 				return b[:l], true
 			}
 		}

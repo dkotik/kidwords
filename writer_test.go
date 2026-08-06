@@ -5,7 +5,7 @@ import (
 	"testing"
 
 	"github.com/dkotik/kidwords/dictionary"
-	"github.com/dkotik/kidwords/test"
+	"github.com/dkotik/kidwords/internal"
 )
 
 func TestWriter(t *testing.T) {
@@ -25,5 +25,5 @@ func TestWriter(t *testing.T) {
 		t.Fatal(err)
 	}
 
-	test.GoldenMust(t, "test/testdata/writeRaw.golden", b.Bytes())
+	internal.GoldenMustMatch(t, "internal/testdata/writeRaw.golden", b.Bytes())
 }

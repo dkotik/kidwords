@@ -133,6 +133,7 @@ var EnglishFourLetterNouns = Dictionary{
 	"math",
 	"meat",
 	"mice",
+	"moth",
 	"milk",
 	"mind",
 	"mode",
@@ -242,6 +243,7 @@ var EnglishFourLetterNouns = Dictionary{
 	"crow",
 	"meal",
 	"pill",
+	"sail",
 	"soap",
 	"kiss",
 	"reed",
@@ -257,6 +259,4 @@ var EnglishFourLetterNouns = Dictionary{
 	"lawn",
 	"golf",
 	"lung",
-	"tale",
-	"arch",
 }
