@@ -16,11 +16,12 @@ import (
 )
 
 func scanPassword(prompt string) ([]byte, error) {
-	oldState, err := term.MakeRaw(int(os.Stdin.Fd()))
+	fd := int(os.Stdin.Fd())
+	oldState, err := term.MakeRaw(fd)
 	if err != nil {
 		panic(err)
 	}
-	defer term.Restore(int(os.Stdin.Fd()), oldState)
+	defer term.Restore(fd, oldState)
 
 	// Restore state in the event of an interrupt.
 	// CITATION: Konstantin Shaposhnikov - https://groups.google.com/forum/#!topic/golang-nuts/kTVAbtee9UA
@@ -33,7 +34,7 @@ func scanPassword(prompt string) ([]byte, error) {
 
 	// Now get the password.
 	fmt.Print(prompt)
-	p, err := term.ReadPassword(syscall.Stdin)
+	p, err := term.ReadPassword(fd)
 	fmt.Println("")
 	if err != nil {
 		return nil, err
