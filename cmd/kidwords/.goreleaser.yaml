@@ -56,7 +56,7 @@ nfpms:
     description: "Durable and accessible paper key encoding that children can use."
     license: "MIT" # required together with the copyright file below
     contents:
-      - src: ./LICENSE
+      - src: ../../LICENSE
         dst: /usr/share/doc/kidwords/copyright
         file_info:
           mode: 0644

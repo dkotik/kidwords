@@ -14,7 +14,7 @@ generate:
 	@output=$$(go generate ./... && go test . -update) || echo "$$output"
 	@date +"[ %T ]"
 build:
-	goreleaser release --snapshot --rm-dist
+	cd cmd/kidwords && goreleaser release --snapshot --clean
 install:
 	cd ./cmd/kidwords && go build -trimpath -o ~/.local/bin/kidwords
 	chmod +x ~/.local/bin/kidwords
