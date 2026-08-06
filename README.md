@@ -27,7 +27,7 @@ Kid Words package or command line tool increases key durability by splitting the
 
 ## Development Checklist
 
-- [ ] Generate example
+- [ ] Generate examples
 - [ ] Use a separate 256-word alphabet for the checksum bytes.
 - [ ] Add random password generator
 - [ ] Add PDF generation

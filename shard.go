@@ -6,7 +6,7 @@ import (
 	"math"
 	"strings"
 
-	"github.com/dkotik/kidwords/shamir"
+	"github.com/dkotik/kidwords/internal/shamir"
 	"github.com/dkotik/kidwords/tgrid"
 )
 

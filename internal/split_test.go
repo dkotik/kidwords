@@ -1,10 +1,10 @@
-package test
+package internal
 
 import (
 	"bytes"
 	"testing"
 
-	"github.com/dkotik/kidwords/shamir"
+	"github.com/dkotik/kidwords/internal/shamir"
 )
 
 func TestSplit(t *testing.T) {
@@ -22,7 +22,7 @@ func TestSplit(t *testing.T) {
 		if err != nil {
 			t.Fatal(err)
 		}
-		if bytes.Compare(secret, data) != 0 {
+		if bytes.Equal(secret, data) == false {
 			t.Fatal("recovered data does not match")
 		}
 	}
