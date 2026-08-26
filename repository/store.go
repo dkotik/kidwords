@@ -1,7 +1,7 @@
 /*
-Package store provides interfaces and cryptographic primitives for [Store] implementations.
+package repository provides interfaces and cryptographic primitives for [Store] implementations.
 */
-package store
+package repository
 
 import (
 	"context"

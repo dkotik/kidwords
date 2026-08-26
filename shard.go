@@ -6,9 +6,15 @@ import (
 	"math"
 	"strings"
 
-	"github.com/dkotik/kidwords/shamir"
+	"github.com/dkotik/kidwords/internal/shamir"
 	"github.com/dkotik/kidwords/tgrid"
 )
+
+type Shard struct {
+	Index    uint8
+	Data     []byte
+	Checksum int64
+}
 
 type Shards []string
 

@@ -7,7 +7,6 @@ import (
 	"github.com/dkotik/kidwords/dictionary"
 )
 
-// type SplitFunc func()
 type SeparatorFunc func() []byte
 
 type writerOptions struct {
@@ -20,7 +19,6 @@ type WriterOption interface {
 }
 
 type readerOptions struct {
-	// split SplitFunc
 	dictionary map[string]byte
 }
 

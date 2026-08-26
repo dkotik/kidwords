@@ -1,4 +1,4 @@
-package store
+package repository
 
 import (
 	"bytes"
@@ -8,10 +8,9 @@ import (
 	"fmt"
 	"io"
 	"time"
+	"uuid"
 
 	"log/slog"
-
-	"github.com/google/uuid"
 )
 
 // Authenticator simplifies low level [Store] operations and secures them with reasonable defaults. Use it to verify that a particular owner knows one of the [PaperKey]s associated with them.

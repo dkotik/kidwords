@@ -1,5 +1,14 @@
 //go:build ignore
 
+/*
+List duplicates in two files:
+
+	grep -xFf enNouns.txt enVerbs.txt
+
+Randomize lines:
+
+	sort -R enVerbs.txt > temp.txt
+*/
 package main
 
 import (

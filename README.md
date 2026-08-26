@@ -1,6 +1,6 @@
 # Kid Words, _Alpha_
 
-Provides durable and accessible paper key encoding that children can use.
+Durable and accessible paper key encoding that children can use.
 
 **Warning: alpha version is not stable and subject to iteration!**
 
@@ -28,6 +28,10 @@ Kid Words package or command line tool increases key durability by splitting the
 ## Development Checklist
 
 - [ ] Use a separate 256-word alphabet for the checksum bytes.
+- [ ] Generate examples
+- [ ] Use a separate 256-word alphabet for the checksum bytes.
+- [ ] Add random password generator
+- [ ] Add PDF generation
 - [ ] Harden Shamir's Secret Sharing algorithm with `mod Prime`.
   - See https://en.wikipedia.org/wiki/Shamir%27s_secret_sharing
   - Another alternative implementation uses prime
@@ -35,10 +39,7 @@ Kid Words package or command line tool increases key durability by splitting the
 - [ ] Implement modular HTTP service using https://templ.guide, HTMX, and https://github.com/mazznoer/csscolorparser for OKLCH colors, Zombie SQLite C-Go-less driver
 - [ ] finish Argon hashing
 - [ ] finish SQL store
-- [ ] add BIP39 converter
 - [ ] add Mongo store
-- [ ] Add Emoji dictionary
-- [ ] Add random password generator
 
 ## Using as Library
 

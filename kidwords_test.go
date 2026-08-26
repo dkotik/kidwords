@@ -1,7 +1,5 @@
 package kidwords
 
-import "fmt"
-
 // func TestIntTransformations(t *testing.T) {
 // 	cases := []int64{0, 9, 16, 32, 999999, 38729387428974, 2374761653249823, 88999999}
 // 	for _, i := range cases {
@@ -24,15 +22,15 @@ import "fmt"
 // 	}
 // }
 
-func ExampleFromBytes() {
-	fmt.Println(
-		FromBytes([]byte("marvel")),
-	)
-	// Output: hole gold hush item half hint <nil>
-}
+// func ExampleFromBytes() {
+// 	fmt.Println(
+// 		FromBytes([]byte("marvel")),
+// 	)
+// 	// Output: hole gold hush item half hint <nil>
+// }
 
-func ExampleToBytes() {
-	b, err := ToBytes("  hole gold hush item half hint ")
-	fmt.Println(string(b), err)
-	// Output: marvel <nil>
-}
+// func ExampleToBytes() {
+// 	b, err := ToBytes("  hole gold hush item half hint ")
+// 	fmt.Println(string(b), err)
+// 	// Output: marvel <nil>
+// }

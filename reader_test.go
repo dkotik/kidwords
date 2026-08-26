@@ -7,20 +7,23 @@ import (
 	"testing"
 
 	"github.com/dkotik/kidwords/dictionary"
-	"github.com/dkotik/kidwords/test"
+	"github.com/dkotik/kidwords/internal"
 )
 
 func TestReader(t *testing.T) {
 	r, err := NewReader(
 		strings.NewReader(`idea...half...icon
-      idea...cell...;grid!`),
+      idea...crow...;grid!`),
 		WithDictionary(&dictionary.EnglishFourLetterNouns),
 	)
+	if err != nil {
+		t.Fatal(err)
+	}
 	b := &bytes.Buffer{}
 	_, err = io.Copy(b, r)
 	if err != nil {
 		t.Fatal(err)
 	}
 
-	test.GoldenMust(t, "test/testdata/readRaw.golden", b.Bytes())
+	internal.GoldenMustMatch(t, "internal/testdata/readRaw.golden", b.Bytes())
 }

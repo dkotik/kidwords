@@ -1,11 +1,11 @@
-package test
+package internal
 
 import (
 	"fmt"
 	"testing"
 
 	"github.com/dkotik/kidwords"
-	"github.com/dkotik/kidwords/shamir"
+	"github.com/dkotik/kidwords/internal/shamir"
 )
 
 func TestShardCombination(t *testing.T) {
