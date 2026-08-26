@@ -1,4 +1,4 @@
-package repository
+package service
 
 import (
 	"bytes"
@@ -20,8 +20,8 @@ const (
 	DefaultArgonThreads    = 4
 )
 
-// ArgonHash is a parameterized salted hash used for storing keys.
-type ArgonHash struct {
+// Argon2Hash is a parameterized salted hash used for storing keys.
+type Argon2Hash struct {
 	Type            string
 	Version         uint8
 	TimeCost        uint32
@@ -32,7 +32,7 @@ type ArgonHash struct {
 }
 
 // NewArgonHash creates an Argon2id hash using default parameters.
-func NewArgonHash(key []byte) (*ArgonHash, error) {
+func NewArgonHash(key []byte) (*Argon2Hash, error) {
 	return NewCustomArgonHash(
 		key,
 		DefaultArgonTimeCost,
@@ -47,12 +47,12 @@ func NewCustomArgonHash(
 	timeCost uint32,
 	memoryCost uint32,
 	parallelThreads uint8,
-) (*ArgonHash, error) {
+) (*Argon2Hash, error) {
 	salt := &bytes.Buffer{}
 	if _, err := io.CopyN(salt, rand.Reader, DefaultArgonKeyLength); err != nil {
 		return nil, err
 	}
-	return &ArgonHash{
+	return &Argon2Hash{
 		Type:            "argon2id",
 		Version:         19,
 		TimeCost:        timeCost,
@@ -69,8 +69,8 @@ func NewCustomArgonHash(
 	}, nil
 }
 
-// Match hashes the given key using [ArgonHash] parameters and compares the result with [ArgonHash.Secret].
-func (a *ArgonHash) Match(key []byte) (bool, error) {
+// Match hashes the given key using [Argon2Hash] parameters and compares the result with [Argon2Hash.Secret].
+func (a *Argon2Hash) Match(key []byte) (bool, error) {
 	switch a.Type {
 	case "argon2d":
 		hash := argon2.Key(
@@ -95,8 +95,8 @@ func (a *ArgonHash) Match(key []byte) (bool, error) {
 	}
 }
 
-// String serializes the [ArgonHash] using format `$<type>$v=<version>$m=<memory>,t=<time>,p=<parallel>$<salt>$<secret>`.
-func (a *ArgonHash) String() string {
+// String serializes the [Argon2Hash] using format `$<type>$v=<version>$m=<memory>,t=<time>,p=<parallel>$<salt>$<secret>`.
+func (a *Argon2Hash) String() string {
 	return fmt.Sprintf(`$%s$v=%d$m=%d,t=%d,p=%d$%s$%s`,
 		a.Type,
 		a.Version,
@@ -108,8 +108,8 @@ func (a *ArgonHash) String() string {
 	)
 }
 
-// ParseArgonHash constructs an [ArgonHash] from a serialized string following the format `$<type>$v=<version>$m=<memory>,t=<time>,p=<parallel>$<salt>$<secret>`.
-func ParseArgonHash(h string) (result *ArgonHash, err error) {
+// ParseArgonHash constructs an [Argon2Hash] from a serialized string following the format `$<type>$v=<version>$m=<memory>,t=<time>,p=<parallel>$<salt>$<secret>`.
+func ParseArgonHash(h string) (result *Argon2Hash, err error) {
 	fragments := strings.FieldsFunc(h, func(r rune) bool {
 		return r == '$'
 	})
@@ -125,7 +125,7 @@ func ParseArgonHash(h string) (result *ArgonHash, err error) {
 		return nil, errors.New("hash version cannot be parsed")
 	}
 
-	result = &ArgonHash{
+	result = &Argon2Hash{
 		Type:    fragments[0],
 		Version: uint8(version),
 	}
