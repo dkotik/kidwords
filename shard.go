@@ -10,6 +10,12 @@ import (
 	"github.com/dkotik/kidwords/tgrid"
 )
 
+type Shard struct {
+	Index    uint8
+	Data     []byte
+	Checksum int64
+}
+
 type Shards []string
 
 func (s Shards) Grid(columns, wrap int) tgrid.Grid {

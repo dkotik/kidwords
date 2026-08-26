@@ -1,6 +1,6 @@
-module github.com/dkotik/kidwords/store
+module github.com/dkotik/kidwords/repository
 
-go 1.21.0
+go 1.27.0
 
 require (
 	golang.org/x/crypto v0.14.0 // indirect

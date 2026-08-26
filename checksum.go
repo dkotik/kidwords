@@ -49,7 +49,7 @@ func (c *checksumWriter) Close() (err error) {
 	return nil
 }
 
-func ChecksumWriter(w io.Writer) io.WriteCloser {
+func NewChecksumWriteCloser(w io.Writer) io.WriteCloser {
 	return &checksumWriter{
 		hash: crc32.New(ChecksumTable),
 		pass: w,
