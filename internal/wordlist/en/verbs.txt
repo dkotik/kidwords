@@ -22,7 +22,6 @@ sift
 pass
 rush
 swap
-mine
 heed
 cook
 seek
@@ -250,14 +249,17 @@ hear
 bash
 abet
 seep
-tout
+surf
 fuze
 cure
 furl
-gird
 honk
 jolt
 jest
 oust
 quip
 knit
+hope
+tout
+gird
+mine

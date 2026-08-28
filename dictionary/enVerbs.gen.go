@@ -27,7 +27,6 @@ var EnglishFourLetterVerbs = Dictionary{
 	"pass",
 	"rush",
 	"swap",
-	"mine",
 	"heed",
 	"cook",
 	"seek",
@@ -255,8 +254,9 @@ var EnglishFourLetterVerbs = Dictionary{
 	"bash",
 	"abet",
 	"seep",
-	"tout",
+	"surf",
 	"fuze",
 	"cure",
 	"furl",
+	"honk",
 }

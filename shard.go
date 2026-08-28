@@ -13,7 +13,7 @@ import (
 type Shard struct {
 	Index    uint8
 	Data     []byte
-	Checksum int64
+	Checksum int32
 }
 
 type Shards []string

@@ -7,6 +7,7 @@ default:
 	@date +"[ %T ]"
 short:
 	@clear
+	# @output=$$(go test -short -run=^TestEncode$$) || echo "$$output" | grep -Ev "^(ok|\\?)"
 	@output=$$(go test -short ./...) || echo "$$output" | grep -Ev "^(ok|\\?)"
 	@date +"[ %T ]"
 generate:
