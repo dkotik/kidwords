@@ -70,11 +70,12 @@ func ChecksumChop(b []byte) (remainder []byte, ok bool) {
 	return b, false
 }
 
-func IsValid(b, c []byte) bool {
+func NewChecksum(b []byte) []byte {
 	h := crc32.New(ChecksumTable)
-	n, err := h.Write(b)
-	if err != nil || n != len(b) {
-		return false
-	}
-	return bytes.Equal(h.Sum(nil), c)
+	_, _ = h.Write(b)
+	return h.Sum(nil)
+}
+
+func IsValid(b, c []byte) bool {
+	return bytes.Equal(NewChecksum(b), c)
 }

@@ -1,7 +1,6 @@
 package internal
 
 import (
-	"fmt"
 	"testing"
 
 	"github.com/dkotik/kidwords"
@@ -30,16 +29,19 @@ func TestShardCombination(t *testing.T) {
 	}
 
 	for i := 0; i <= 5; i++ {
-		fmt.Printf("%d: %x\n", i+1, shards[i])
-		fmt.Printf("%d: %x\n", i+2, shards[i+1])
-		fmt.Printf("%d: %x\n", i+3, shards[i+2])
+		// fmt.Printf("%d: %x\n", i+1, shards[i])
+		// fmt.Printf("%d: %x\n", i+2, shards[i+1])
+		// fmt.Printf("%d: %x\n", i+3, shards[i+2])
 
 		data, err := shamir.Combine(shards[i : i+3])
 		if err != nil {
 			t.Fatal(err)
 		}
-		fmt.Println(string(data))
+		if len(data) == 0 {
+			t.Fatal("combined data length is 0")
+		}
+		// fmt.Println(string(data))
 	}
 
-	t.Fatal("check")
+	// t.Fatal("check")
 }

@@ -4,7 +4,6 @@ import (
 	"bytes"
 	"compress/gzip"
 	"io"
-	"os"
 	"strings"
 	"testing"
 )
@@ -14,10 +13,10 @@ func TestSplit(t *testing.T) {
 	if err != nil {
 		t.Fatal(err)
 	}
-	if _, err = shards.Grid(6, 18).Write(os.Stdout); err != nil {
+	if _, err = shards.Grid(6, 18).Write(io.Discard); err != nil {
 		t.Fatal(err)
 	}
-	if err = shards.WriteHTML(os.Stdout, 3); err != nil {
+	if err = shards.WriteHTML(io.Discard, 3); err != nil {
 		t.Fatal(err)
 	}
 	// t.Fatal("show")

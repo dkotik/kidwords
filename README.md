@@ -13,6 +13,7 @@ Kid Words encoding increases key durability by splitting the key using [Shamir's
 <details>
   <summary>Planned features for <strong>v1.0.0</strong> release. ↩</summary>
 
+- [ ] the final byte of a SSS share is just an index? can drop it
 - [ ] Use a separate 256-verb alphabet for the checksum bytes.
 - [ ] Add random password generator
 - [ ] Add PDF generation
@@ -106,7 +107,7 @@ English words:
   type Shard struct {
   	Index    uint8  // decoded from (line_number_prefix - 1)
   	Data     []byte // decoded from English nouns
-  	Checksum int32  // decoded big-endian from four English verbs
+  	Checksum []byte // decoded big-endian from four English verbs (32bit)
   }
   ```
 2. Each line of an encoded shard begins with a shard index number to

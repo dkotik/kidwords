@@ -14,13 +14,13 @@ func TestEncode(t *testing.T) {
 	}{
 		{
 			Shards: []Shard{
-				{Index: 0, Data: []byte("34534a23n"), Checksum: 5656},
+				{Index: 0, Data: []byte("34534a23n"), Checksum: []byte{0x02, 0x38, 0x02, 0x38}},
 			},
 		},
 		{
 			Shards: []Shard{
-				{Index: 0, Data: []byte("3453a5234"), Checksum: 5656},
-				{Index: 1, Data: []byte("gho3452f4"), Checksum: 5656},
+				{Index: 0, Data: []byte("3453a5234"), Checksum: []byte{0x02, 0x38, 0x02, 0x38}},
+				{Index: 1, Data: []byte("gho3452f4"), Checksum: []byte{0x02, 0x38, 0x02, 0x38}},
 			},
 		},
 	}

@@ -1,10 +1,12 @@
 package kidwords
 
 import (
+	"errors"
 	"fmt"
 	"strconv"
 
 	"github.com/dkotik/kidwords/dictionary"
+	"github.com/dkotik/kidwords/internal/shamir"
 )
 
 type decoder struct {
@@ -33,56 +35,83 @@ func (d *decoder) buildShard(index int, nouns, verbs []byte) (_ []byte, err erro
 	return nouns, nil
 }
 
+type tokenKind uint8
+
+const (
+	tokenBoundary tokenKind = iota
+	tokenWord
+	tokenIndex
+)
+
 func (d *decoder) Decode(data []byte) (b []byte, err error) {
 	var (
-		lastIndex int
-		index     []byte
-		word      []byte
-		nouns     map[int][]byte
-		verbs     map[int][]byte
-		c         byte
-		ok        bool
+		index       int
+		token       []byte
+		tokenKind   tokenKind
+		nouns       = make(map[int][]byte)
+		verbs       = make(map[int][]byte)
+		shardErrors []error
 	)
+
+	consumeToken := func() {
+		if len(token) == 0 {
+			return
+		}
+		if tokenKind == tokenIndex {
+			i, err := strconv.Atoi(string(token))
+			if err != nil {
+				shardErrors = append(shardErrors, fmt.Errorf("invalid index: %s", token))
+			} else {
+				index = i
+			}
+			token = nil
+			return
+		}
+		c, ok := d.Nouns[string(token)]
+		if ok {
+			nouns[index] = append(nouns[index], c)
+			token = nil
+			return
+		}
+		c, ok = d.Verbs[string(token)]
+		if ok {
+			verbs[index] = append(verbs[index], c)
+			token = nil
+			return
+		}
+		shardErrors = append(shardErrors, fmt.Errorf("unknown word: %s", token))
+	}
 
 	for _, c := range data {
 		switch c {
-		case '0', '1', '2', '3', '4', '5', '6', '7', '8', '9':
-			if word != nil {
-				c, ok = d.Nouns[string(word)]
-				if ok {
-					nouns[lastIndex] = append(nouns[lastIndex], c)
-				} else {
-					c, ok = d.Verbs[string(word)]
-					if ok {
-						verbs[lastIndex] = append(verbs[lastIndex], c)
-					}
-				}
-				word = nil
+		case ' ', '\t', '\n', '.', ',', '\'', '"', '`', '|', '(', ')', '!', '?', '+', '-':
+			switch tokenKind {
+			case tokenBoundary: // do nothing
+			default:
+				consumeToken()
+				tokenKind = tokenBoundary
 			}
-			index = append(index, c)
+		case '1', '2', '3', '4', '5', '6', '7', '8', '9', '0':
+			switch tokenKind {
+			case tokenIndex:
+			default:
+				consumeToken()
+				tokenKind = tokenIndex
+			}
+			token = append(token, c)
 		default:
-			if index != nil {
-				lastIndex, err = strconv.Atoi(string(index))
-				if err != nil {
-					return nil, err
-				}
-				index = nil
+			switch tokenKind {
+			case tokenWord:
+			default:
+				consumeToken()
+				tokenKind = tokenWord
 			}
-			word = append(word, c)
+			token = append(token, c)
 		}
 	}
+	consumeToken() // last word
 
-	c, ok = d.Nouns[string(word)]
-	if ok {
-		nouns[lastIndex] = append(nouns[lastIndex], c)
-	} else {
-		c, ok = d.Verbs[string(word)]
-		if ok {
-			verbs[lastIndex] = append(verbs[lastIndex], c)
-		}
-	}
-
-	shares := make([]byte, 0, len(nouns))
+	shares := make([][]byte, 0, len(nouns))
 	for index, ns := range nouns {
 		vs, ok := verbs[index]
 		if !ok {
@@ -90,10 +119,16 @@ func (d *decoder) Decode(data []byte) (b []byte, err error) {
 		}
 		share, err := d.buildShard(index, ns, vs)
 		if err != nil {
-			// return nil, err
+			shardErrors = append(shardErrors, err)
 			continue
 		}
-		shares = append(shares, share...)
+		shares = append(shares, share)
 	}
-	return shares, nil
+
+	secret, err := shamir.Combine(shares)
+	if err != nil {
+		shardErrors = append(shardErrors, err)
+		return nil, errors.Join(shardErrors...)
+	}
+	return secret, nil
 }

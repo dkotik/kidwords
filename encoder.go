@@ -20,8 +20,8 @@ type Cell struct {
 type Table [][]Cell
 
 type Encoder interface {
-	MakeTable(shards []Shard) Table
-	Encode(w io.Writer, shards []Shard) error
+	MakeTable(Secret) Table
+	Encode(io.Writer, Secret) error
 }
 
 type encoder struct {
@@ -53,7 +53,7 @@ func (e *encoder) shardToWords(shard Shard) (words []string) {
 	index := 0
 	var c byte
 	words = make([]string, 0, count+4)
-	verbBytes := int32ToBytesBigEndian(shard.Checksum)
+	verbBytes := shard.Checksum
 	verbsCount := 4
 
 	for _, c = range shard.Data {
@@ -82,7 +82,7 @@ func (e *encoder) shardToWords(shard Shard) (words []string) {
 	return words
 }
 
-func (e *encoder) MakeTable(shards []Shard) (table Table) {
+func (e *encoder) MakeTable(shards Secret) (table Table) {
 	var (
 		shard Shard
 		words []string
@@ -128,7 +128,7 @@ func (e *encoder) MakeTable(shards []Shard) (table Table) {
 	return
 }
 
-func (e *encoder) Encode(w io.Writer, shards []Shard) (err error) {
+func (e *encoder) Encode(w io.Writer, shards Secret) (err error) {
 	padding := len(shards) / 10
 	table := e.MakeTable(shards)
 	for _, row := range table {
