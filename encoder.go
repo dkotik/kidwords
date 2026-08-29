@@ -89,7 +89,7 @@ func (e *encoder) MakeTable(shards Secret) (table Table) {
 		cells []Cell
 		// rows  [][]Cell
 		// cell  Cell
-		i, j, index int
+		i, j, lastJ int
 	)
 	for chunk := range slices.Chunk(shards, e.Columns) {
 		shard = chunk[0]
@@ -108,10 +108,9 @@ func (e *encoder) MakeTable(shards Secret) (table Table) {
 		}
 
 		for i, shard = range chunk[1:] {
-			j = index
-			i++
+			j = lastJ
 			for words = range slices.Chunk(e.shardToWords(shard), 4) {
-				table[j][i] = Cell{
+				table[j][i+1] = Cell{
 					Index: shard.Index + 1,
 					Words: [4]string{
 						words[0],
@@ -123,7 +122,7 @@ func (e *encoder) MakeTable(shards Secret) (table Table) {
 				j++
 			}
 		}
-		index++
+		lastJ = j
 	}
 	return
 }
@@ -141,7 +140,7 @@ func (e *encoder) Encode(w io.Writer, shards Secret) (err error) {
 				continue
 			}
 
-			_, err = w.Write(bytes.Repeat([]byte(" "), padding-(int(cell.Index)-1)/10))
+			_, err = w.Write(bytes.Repeat([]byte(" "), padding-(int(cell.Index))/10))
 			if err != nil {
 				return err
 			}

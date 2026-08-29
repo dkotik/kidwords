@@ -17,7 +17,11 @@ func TestDecoder(t *testing.T) {
 		t.Fatal("secret length is not 12")
 	}
 
-	encoder, err := NewEncoder(dictionary.EnglishFourLetterNouns, dictionary.EnglishFourLetterVerbs, 3)
+	encoder, err := NewEncoder(
+		dictionary.EnglishFourLetterNouns,
+		dictionary.EnglishFourLetterVerbs,
+		3,
+	)
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -29,6 +33,10 @@ func TestDecoder(t *testing.T) {
 	if b.Len() == 0 {
 		t.Fatal("empty buffer")
 	}
+	// fmt.Println("===")
+	// fmt.Println(b.String())
+	// fmt.Println("===")
+	// t.Fail()
 
 	decoder := NewDecoder(
 		dictionary.EnglishFourLetterNouns,

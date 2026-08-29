@@ -4,6 +4,7 @@ import (
 	"errors"
 	"fmt"
 	"strconv"
+	"unicode/utf8"
 
 	"github.com/dkotik/kidwords/dictionary"
 	"github.com/dkotik/kidwords/internal/shamir"
@@ -45,12 +46,14 @@ const (
 
 func (d *decoder) Decode(data []byte) (b []byte, err error) {
 	var (
-		index       int
-		token       []byte
-		tokenKind   tokenKind
-		nouns       = make(map[int][]byte)
-		verbs       = make(map[int][]byte)
-		shardErrors []error
+		n            int
+		index        int
+		highestIndex int
+		token        []byte
+		tokenKind    tokenKind
+		nouns        = make(map[int][]byte)
+		verbs        = make(map[int][]byte)
+		shardErrors  []error
 	)
 
 	consumeToken := func() {
@@ -60,9 +63,14 @@ func (d *decoder) Decode(data []byte) (b []byte, err error) {
 		if tokenKind == tokenIndex {
 			i, err := strconv.Atoi(string(token))
 			if err != nil {
-				shardErrors = append(shardErrors, fmt.Errorf("invalid index: %s", token))
+				shardErrors = append(shardErrors, fmt.Errorf("invalid shard index: %s", token))
+			} else if i < 1 || i > 255 {
+				shardErrors = append(shardErrors, fmt.Errorf("shard index out of range: %d", index))
 			} else {
 				index = i
+				if index > highestIndex {
+					highestIndex = index
+				}
 			}
 			token = nil
 			return
@@ -75,6 +83,7 @@ func (d *decoder) Decode(data []byte) (b []byte, err error) {
 		}
 		c, ok = d.Verbs[string(token)]
 		if ok {
+			// fmt.Println(index, "verb", string(token))
 			verbs[index] = append(verbs[index], c)
 			token = nil
 			return
@@ -82,9 +91,10 @@ func (d *decoder) Decode(data []byte) (b []byte, err error) {
 		shardErrors = append(shardErrors, fmt.Errorf("unknown word: %s", token))
 	}
 
-	for _, c := range data {
+	runeBuf := make([]byte, 4)
+	for _, c := range string(data) {
 		switch c {
-		case ' ', '\t', '\n', '.', ',', '\'', '"', '`', '|', '(', ')', '!', '?', '+', '-':
+		case ' ', '\t', '\n', '·', '.', ',', '\'', '"', '`', '|', '(', ')', '!', '?', '+', '-', '[', ']', '{', '}', ':', ';', '\\', '/':
 			switch tokenKind {
 			case tokenBoundary: // do nothing
 			default:
@@ -98,7 +108,7 @@ func (d *decoder) Decode(data []byte) (b []byte, err error) {
 				consumeToken()
 				tokenKind = tokenIndex
 			}
-			token = append(token, c)
+			token = append(token, byte(c))
 		default:
 			switch tokenKind {
 			case tokenWord:
@@ -106,12 +116,16 @@ func (d *decoder) Decode(data []byte) (b []byte, err error) {
 				consumeToken()
 				tokenKind = tokenWord
 			}
-			token = append(token, c)
+			n = utf8.EncodeRune(runeBuf, c)
+			token = append(token, runeBuf[:n]...)
 		}
 	}
 	consumeToken() // last word
+	if highestIndex == 0 {
+		return nil, fmt.Errorf("no shards found")
+	}
 
-	shares := make([][]byte, 0, len(nouns))
+	shares := make([][]byte, highestIndex)
 	for index, ns := range nouns {
 		vs, ok := verbs[index]
 		if !ok {
@@ -122,7 +136,7 @@ func (d *decoder) Decode(data []byte) (b []byte, err error) {
 			shardErrors = append(shardErrors, err)
 			continue
 		}
-		shares = append(shares, share)
+		shares[index-1] = share
 	}
 
 	secret, err := shamir.Combine(shares)

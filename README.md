@@ -13,7 +13,6 @@ Kid Words encoding increases key durability by splitting the key using [Shamir's
 <details>
   <summary>Planned features for <strong>v1.0.0</strong> release. ↩</summary>
 
-- [ ] the final byte of a SSS share is just an index? can drop it
 - [ ] Use a separate 256-verb alphabet for the checksum bytes.
 - [ ] Add random password generator
 - [ ] Add PDF generation

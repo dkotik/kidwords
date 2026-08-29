@@ -1,6 +1,8 @@
 package kidwords
 
-import "github.com/dkotik/kidwords/internal/shamir"
+import (
+	"github.com/dkotik/kidwords/internal/shamir"
+)
 
 type Secret []Shard
 
@@ -16,6 +18,7 @@ func NewSecret(data []byte, parts, threshold int) (Secret, error) {
 			Data:     share,
 			Checksum: NewChecksum(share),
 		}
+		// fmt.Printf("shard %d: %d\n", i, share[len(share)-1])
 	}
 	return secret, nil
 }
