@@ -125,7 +125,7 @@ func (d *decoder) Decode(data []byte) (b []byte, err error) {
 		return nil, fmt.Errorf("no shards found")
 	}
 
-	shares := make([][]byte, highestIndex)
+	shares := make([][]byte, 0, len(nouns))
 	for index, ns := range nouns {
 		vs, ok := verbs[index]
 		if !ok {
@@ -136,7 +136,8 @@ func (d *decoder) Decode(data []byte) (b []byte, err error) {
 			shardErrors = append(shardErrors, err)
 			continue
 		}
-		shares[index-1] = share
+		fmt.Println(index, len(share))
+		shares = append(shares, share)
 	}
 
 	secret, err := shamir.Combine(shares)

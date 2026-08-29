@@ -24,6 +24,8 @@ Kid Words encoding increases key durability by splitting the key using [Shamir's
 - [ ] finish Argon hashing
 - [ ] finish SQL store
 - [ ] Generate examples
+- [ ] the last byte of each share is a random `uint8` that identifies that share.
+  That number could be used instead of the share index and would have 1 byte per shard.
 </details>
 
 ## Benefits
@@ -106,7 +108,7 @@ English words:
   type Shard struct {
   	Index    uint8  // decoded from (line_number_prefix - 1)
   	Data     []byte // decoded from English nouns
-  	Checksum []byte // decoded big-endian from four English verbs (32bit)
+  	Checksum []byte // decoded big-endian from four English verbs (32bit=4bytes)
   }
   ```
 2. Each line of an encoded shard begins with a shard index number to
@@ -115,7 +117,7 @@ character recognition algorithms. Shard index begins with "**1**", never
 with zero.
 3. Nouns and verbs of one shard can be mixed with each other, but
 they must always follow the exact left-to-right order relative to each
-other. Date two or less bytes of _Data_ and one byte or none of 
+other. Take two or less bytes of _Data_ and one byte or none of 
 _Checksum_. Repeat until both _Data_ and _Checksum_ bytes are fully
 encoded:
 

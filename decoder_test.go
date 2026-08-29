@@ -2,6 +2,7 @@ package kidwords
 
 import (
 	"bytes"
+	"regexp"
 	"testing"
 
 	"github.com/dkotik/kidwords/dictionary"
@@ -33,17 +34,20 @@ func TestDecoder(t *testing.T) {
 	if b.Len() == 0 {
 		t.Fatal("empty buffer")
 	}
-	// fmt.Println("===")
-	// fmt.Println(b.String())
-	// fmt.Println("===")
-	// t.Fail()
 
 	decoder := NewDecoder(
 		dictionary.EnglishFourLetterNouns,
 		dictionary.EnglishFourLetterVerbs,
 	)
 
-	decoded, err := decoder.Decode(b.Bytes())
+	// axe every line that starts with to destroy three shards
+	axed := regexp.MustCompile(`(?m)^\s*[4]\s+(.*)$`).ReplaceAll(b.Bytes(), []byte(``))
+	// fmt.Println("===")
+	// fmt.Println(string(axed))
+	// fmt.Println("===")
+	// t.Fail()
+
+	decoded, err := decoder.Decode(axed)
 	if err != nil {
 		t.Fatal(err)
 	}
