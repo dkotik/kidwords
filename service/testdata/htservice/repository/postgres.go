@@ -1,4 +1,4 @@
-package repository
+package postgres
 
 import (
 	"context"
@@ -16,7 +16,7 @@ const InstallPostgresTable = `
       created    TIMESTAMP NOT NULL DEFAULT NOW()
     );`
 
-var _ Store = (*PostgresStore)(nil) // interface satisfaction
+// var _ repository.Repository = (*PostgresStore)(nil) // interface satisfaction
 
 type PostgresStore struct {
 	stmtCreate        *sql.Stmt

@@ -4,14 +4,12 @@ import (
 	"context"
 	"testing"
 	"time"
-
-	"github.com/dkotik/kidwords/service"
 )
 
 func NewSecretsRepositoryTest(r Repository) func(*testing.T) {
 	return func(t *testing.T) {
 		userID := "testUser"
-		secret := service.Secret{
+		secret := Secret{
 			Name: "test",
 		}
 		var err error

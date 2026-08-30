@@ -2,8 +2,6 @@ package secret
 
 import (
 	"context"
-
-	"github.com/dkotik/kidwords/service"
 )
 
 type Transaction interface {
@@ -11,10 +9,10 @@ type Transaction interface {
 }
 
 type Repository interface {
-	Create(context.Context, service.Secret) error
-	Retrieve(context.Context, string) (service.Secret, error)
-	Update(context.Context, service.Secret) error
+	Create(context.Context, Secret) error
+	Retrieve(context.Context, string) (Secret, error)
+	Update(context.Context, Secret) error
 	Delete(context.Context, string) error
-	List(context.Context, string) ([]service.Secret, error)
+	List(context.Context, string) ([]Secret, error)
 	WithTransaction(context.Context, Transaction) (Repository, error)
 }
