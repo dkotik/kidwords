@@ -9,9 +9,14 @@ import (
 	"context"
 	"errors"
 
+	"github.com/dkotik/htadaptor"
 	"github.com/dkotik/kidwords/service/secret"
 	"github.com/nicksnyder/go-i18n/v2/i18n"
 	"golang.org/x/text/language"
+)
+
+const (
+	PaperKeyType = "kidwordsPaperKey"
 )
 
 type User interface {
@@ -37,7 +42,10 @@ type Service struct {
 	authenticator Authenticator
 	repository    secret.Repository
 	localizer     Localizer
+	keyCountLimit int
 	keyLength     int
+	shardCount    int
+	quorumCount   int
 }
 
 func New(
@@ -57,14 +65,27 @@ func New(
 			return lc
 		})
 	}
-	if o.KeyLength == 0 {
-		o.KeyLength = 24
+	if o.KeyCountLimit == 0 {
+		o.KeyCountLimit = DefaultKeyCount
 	}
+	if o.KeyLength == 0 {
+		o.KeyLength = DefaultKeyLength
+	}
+	if o.ShardCount == 0 {
+		o.ShardCount = DefaultShardCount
+	}
+	if o.QuorumCount == 0 {
+		o.QuorumCount = DefaultQuorumCount
+	}
+
 	return &Service{
 		authenticator: authenticator,
 		repository:    repository,
 		localizer:     o.Localizer,
+		keyCountLimit: int(o.KeyCountLimit),
 		keyLength:     int(o.KeyLength),
+		shardCount:    int(o.ShardCount),
+		quorumCount:   int(o.QuorumCount),
 	}, nil
 }
 
@@ -78,4 +99,15 @@ func (s *Service) unpackContext(ctx context.Context) (u User, l *i18n.Localizer,
 		return nil, nil, err
 	}
 	return u, l, nil
+}
+
+func newNotFoundError(lc *i18n.Localizer) error {
+	msg, err := lc.LocalizeMessage(&i18n.Message{
+		ID:    "KidwordsErrorKeyNotFound",
+		Other: "paper key does not exist",
+	})
+	if err != nil {
+		return err
+	}
+	return htadaptor.NewNotFoundError(msg)
 }
