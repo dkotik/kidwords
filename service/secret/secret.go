@@ -2,9 +2,16 @@ package secret
 
 import (
 	"errors"
+	"fmt"
 	"log/slog"
 	"time"
 )
+
+const (
+	TypePaperKey = "kidwordsPaperKey"
+)
+
+var ErrDuplicateSecretName = errors.New("duplicate secret name")
 
 type Secret struct {
 	ID             string
@@ -27,28 +34,28 @@ func (p *Secret) LogValue() slog.Value {
 
 func (s Secret) IsEqual(other Secret) error {
 	if s.ID != other.ID {
-		return errors.New("ID mismatch")
+		return fmt.Errorf("ID mismatch: %q vs %q", s.ID, other.ID)
 	}
 	if s.UserID != other.UserID {
-		return errors.New("user ID mismatch")
+		return fmt.Errorf("user ID mismatch: %q vs %q", s.UserID, other.UserID)
 	}
 	if s.Name != other.Name {
-		return errors.New("name is different")
+		return fmt.Errorf("name is different: %q vs %q", s.Name, other.Name)
 	}
 	if s.Type != other.Type {
-		return errors.New("type is different")
+		return fmt.Errorf("type is different: %q vs %q", s.Type, other.Type)
 	}
 	if s.SaltedHash != other.SaltedHash {
-		return errors.New("salted hash is different")
+		return fmt.Errorf("salted hash is different: %q vs %q", s.SaltedHash, other.SaltedHash)
 	}
 	if s.CreatedAt.Unix() != other.CreatedAt.Unix() {
-		return errors.New("created at is different")
+		return fmt.Errorf("created at is different: %q vs %q", s.CreatedAt, other.CreatedAt)
 	}
 	if s.UpdatedAt.Unix() != other.UpdatedAt.Unix() {
-		return errors.New("updated at is different")
+		return fmt.Errorf("updated at is different: %q vs %q", s.UpdatedAt, other.UpdatedAt)
 	}
 	if s.LastAcceptedAt.Unix() != other.LastAcceptedAt.Unix() {
-		return errors.New("last accepted at is different")
+		return fmt.Errorf("last accepted at is different: %q vs %q", s.LastAcceptedAt, other.LastAcceptedAt)
 	}
 	return nil
 }

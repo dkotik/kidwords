@@ -76,11 +76,11 @@ func (s *Service) createKeyFormPost(ctx context.Context, name string) (_ *FormCr
 		})
 		return form, err
 	}
-	err = rp.Create(ctx, secret.Secret{
+	_, err = rp.Create(ctx, secret.Secret{
 		ID:         uuid.New().String(),
 		UserID:     form.User.GetID(),
 		Name:       form.KeyName,
-		Type:       PaperKeyType,
+		Type:       secret.TypePaperKey,
 		SaltedHash: argonHash.String(),
 		CreatedAt:  time.Now(),
 		UpdatedAt:  time.Now(),

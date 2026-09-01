@@ -9,7 +9,7 @@ type Transaction interface {
 }
 
 type Repository interface {
-	Create(context.Context, Secret) error
+	Create(context.Context, Secret) (string, error)
 	Retrieve(context.Context, string) (Secret, error)
 	Update(context.Context, Secret) error
 	Delete(context.Context, string) error

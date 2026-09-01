@@ -5,6 +5,7 @@ import (
 	"errors"
 	"fmt"
 	"strings"
+	"sync"
 	"time"
 
 	"github.com/dkotik/kidwords/service/secret"
@@ -15,7 +16,8 @@ import (
 const SecretsTableFields = `
       id                  TEXT PRIMARY KEY,
       user_id             TEXT NOT NULL,
-      name                TEXT NOT NULL,
+      name                TEXT NOT NULL UNIQUE,
+      type                TEXT NOT NULL,
       salted_hash         TEXT NOT NULL,
       created_at          TEXT NOT NULL,
       updated_at          TEXT NOT NULL,
@@ -24,11 +26,13 @@ const SecretsTableFields = `
 var _ secret.Repository = (*sqRepository)(nil) // interface satisfaction
 
 type sqRepository struct {
-	Conn              *sqlite.Conn
-	stmtCreate        *sqlite.Stmt
-	stmtRetrieveAll   *sqlite.Stmt
-	stmtDelete        *sqlite.Stmt
-	stmtDeleteByOwner *sqlite.Stmt
+	mu           *sync.Mutex
+	conn         *sqlite.Conn
+	stmtCreate   *sqlite.Stmt
+	stmtRetrieve *sqlite.Stmt
+	stmtUpdate   *sqlite.Stmt
+	stmtDelete   *sqlite.Stmt
+	stmtList     *sqlite.Stmt
 }
 
 func New(conn *sqlite.Conn, withOptions ...Option) (s *sqRepository, err error) {
@@ -36,7 +40,11 @@ func New(conn *sqlite.Conn, withOptions ...Option) (s *sqRepository, err error) 
 		return nil, errors.New("cannot use a <nil> database connection")
 	}
 	o := &options{}
-	for _, option := range append(withOptions, withDefaultTableName()) {
+	for _, option := range append(
+		withOptions,
+		withDefaultTableName(),
+		withDefaultSecretType(),
+	) {
 		if err = option(o); err != nil {
 			return nil, fmt.Errorf("cannot initialize the store: %w", err)
 		}
@@ -47,34 +55,44 @@ func New(conn *sqlite.Conn, withOptions ...Option) (s *sqRepository, err error) 
 	}
 
 	s = &sqRepository{
-		Conn: conn,
+		mu:   &sync.Mutex{},
+		conn: conn,
 	}
 
 	if s.stmtCreate, err = conn.Prepare(
 		fmt.Sprintf(`
-      INSERT INTO %s(id, owner, name, saltedHash, created) VALUES($1, $2, $3, $4, $5);
+      INSERT INTO %s(id, user_id, name, type, salted_hash, created_at, updated_at) VALUES(?, ?, ?, ?, ?, ?, ?)
     `, o.TableName),
 	); err != nil {
 		return nil, err
 	}
 
-	if s.stmtRetrieveAll, err = conn.Prepare(
+	if s.stmtRetrieve, err = conn.Prepare(
+		fmt.Sprintf(`
+      SELECT user_id, name, type, salted_hash, created_at, updated_at, last_accepted_at
+      FROM %s WHERE id=?`, o.TableName),
+	); err != nil {
+		return nil, err
+	}
+
+	if s.stmtUpdate, err = conn.Prepare(
+		fmt.Sprintf(`
+      UPDATE %s SET user_id=?, name=?, type=?, salted_hash=?, created_at=?, updated_at=?, last_accepted_at=? WHERE id=?`, o.TableName),
+	); err != nil {
+		return nil, err
+	}
+
+	if s.stmtList, err = conn.Prepare(
 		fmt.Sprintf(`
       SELECT
-        id, owner, name, saltedHash, created
-      FROM %s WHERE owner=$1 ORDER BY created DESC;`, o.TableName),
+        id, user_id, name, type, salted_hash, created_at, updated_at, last_accepted_at
+      FROM %s WHERE user_id=? ORDER BY created_at DESC`, o.TableName),
 	); err != nil {
 		return nil, err
 	}
 
 	if s.stmtDelete, err = conn.Prepare(
-		fmt.Sprintf(`DELETE FROM %s WHERE id=$1;`, o.TableName),
-	); err != nil {
-		return nil, err
-	}
-
-	if s.stmtDeleteByOwner, err = conn.Prepare(
-		fmt.Sprintf(`DELETE FROM %s WHERE owner=$1;`, o.TableName),
+		fmt.Sprintf(`DELETE FROM %s WHERE id=?`, o.TableName),
 	); err != nil {
 		return nil, err
 	}
@@ -82,18 +100,20 @@ func New(conn *sqlite.Conn, withOptions ...Option) (s *sqRepository, err error) 
 	return s, nil
 }
 
-func (s *sqRepository) BindContext(ctx context.Context) func() {
-	old := s.Conn.SetInterrupt(ctx.Done())
+func (r *sqRepository) BindContext(ctx context.Context) func() {
+	r.mu.Lock()
+	old := r.conn.SetInterrupt(ctx.Done())
 	return func() {
-		s.Conn.SetInterrupt(old)
+		r.conn.SetInterrupt(old)
+		r.mu.Unlock()
 	}
 }
 
-func (s *sqRepository) BeginTransaction(context.Context) (secret.Repository, secret.Transaction, error) {
-	return s, transaction(sqlitex.Transaction(s.Conn)), nil
+func (r *sqRepository) BeginTransaction(context.Context) (secret.Repository, secret.Transaction, error) {
+	return r, transaction(sqlitex.Transaction(r.conn)), nil
 }
 
-func (s *sqRepository) WithTransaction(
+func (r *sqRepository) WithTransaction(
 	ctx context.Context,
 	tx secret.Transaction,
 ) (secret.Repository, error) {
@@ -101,7 +121,7 @@ func (s *sqRepository) WithTransaction(
 	if !ok {
 		return nil, fmt.Errorf("imcompatible transaction type")
 	}
-	return s, nil
+	return r, nil
 }
 
 // escapeIdentifier safely quotes an SQLite table or column name.

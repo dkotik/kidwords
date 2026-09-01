@@ -78,7 +78,7 @@ func (s *Service) updateKeyFormPost(ctx context.Context, req *UpdateKeyRequest) 
 	err = s.repository.Update(ctx, secret.Secret{
 		ID:         req.UUID,
 		Name:       form.KeyName,
-		Type:       PaperKeyType,
+		Type:       secret.TypePaperKey,
 		SaltedHash: current.SaltedHash,
 		CreatedAt:  current.CreatedAt,
 		UpdatedAt:  time.Now(),

@@ -6,7 +6,7 @@ import (
 	"github.com/dkotik/kidwords/service/secret"
 )
 
-func (s *sqRepository) Update(
+func (r *sqRepository) Update(
 	ctx context.Context,
 	secret secret.Secret,
 ) (err error) {

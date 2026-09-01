@@ -21,10 +21,6 @@ import (
 //go:embed media/*
 var assets embed.FS
 
-const (
-	PaperKeyType = "kidwordsPaperKey"
-)
-
 type User interface {
 	GetID() string
 	GetName() string
