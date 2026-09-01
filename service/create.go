@@ -56,12 +56,12 @@ func (s *Service) createKeyFormPost(ctx context.Context, name string) (_ *FormCr
 		return form, err
 	}
 
-	tx, err := s.repository.BeginTransaction(ctx)
+	rp, tx, err := s.repository.BeginTransaction(ctx)
 	if err != nil {
 		return form, err
 	}
-	defer tx.CommitOrRollback(ctx, &err)
-	rp, err := s.repository.WithTransaction(ctx, tx)
+	defer tx.Close(&err)
+	rp, err = s.repository.WithTransaction(ctx, tx)
 	if err != nil {
 		return form, err
 	}
@@ -77,13 +77,13 @@ func (s *Service) createKeyFormPost(ctx context.Context, name string) (_ *FormCr
 		return form, err
 	}
 	err = rp.Create(ctx, secret.Secret{
-		ID:        uuid.New().String(),
-		UserID:    form.User.GetID(),
-		Name:      form.KeyName,
-		Type:      PaperKeyType,
-		Hash:      argonHash.String(),
-		CreatedAt: time.Now(),
-		UpdatedAt: time.Now(),
+		ID:         uuid.New().String(),
+		UserID:     form.User.GetID(),
+		Name:       form.KeyName,
+		Type:       PaperKeyType,
+		SaltedHash: argonHash.String(),
+		CreatedAt:  time.Now(),
+		UpdatedAt:  time.Now(),
 	})
 	if err != nil {
 		return form, err

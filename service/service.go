@@ -7,13 +7,19 @@ package service
 
 import (
 	"context"
+	"embed"
 	"errors"
+	"html/template"
+	"net/http"
 
 	"github.com/dkotik/htadaptor"
 	"github.com/dkotik/kidwords/service/secret"
 	"github.com/nicksnyder/go-i18n/v2/i18n"
 	"golang.org/x/text/language"
 )
+
+//go:embed media/*
+var assets embed.FS
 
 const (
 	PaperKeyType = "kidwordsPaperKey"
@@ -52,7 +58,7 @@ func New(
 	authenticator Authenticator,
 	repository secret.Repository,
 	withOptions ...Option,
-) (*Service, error) {
+) (http.Handler, error) {
 	o := &options{}
 	for _, opt := range withOptions {
 		if err := opt(o); err != nil {
@@ -77,8 +83,17 @@ func New(
 	if o.QuorumCount == 0 {
 		o.QuorumCount = DefaultQuorumCount
 	}
+	if o.ServeMux == nil {
+		o.ServeMux = http.NewServeMux()
+	}
+	if o.Adaptor == nil {
+		o.Adaptor = &htadaptor.Adaptor{}
+	}
+	if o.Template == nil {
+		o.Template = template.Must(template.New("").Parse(""))
+	}
 
-	return &Service{
+	service := &Service{
 		authenticator: authenticator,
 		repository:    repository,
 		localizer:     o.Localizer,
@@ -86,7 +101,18 @@ func New(
 		keyLength:     int(o.KeyLength),
 		shardCount:    int(o.ShardCount),
 		quorumCount:   int(o.QuorumCount),
-	}, nil
+	}
+
+	list, err := o.Adaptor.AdaptNullaryFunc(
+		service.list,
+		htadaptor.WithTemplate(nil),
+	)
+	if err != nil {
+		return nil, err
+	}
+	o.ServeMux.Handle(o.PathPrefix, list)
+
+	return o.ServeMux, nil
 }
 
 func (s *Service) unpackContext(ctx context.Context) (u User, l *i18n.Localizer, err error) {

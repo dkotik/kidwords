@@ -5,7 +5,7 @@ import (
 )
 
 type Transaction interface {
-	CommitOrRollback(context.Context, *error) error
+	Close(*error)
 }
 
 type Repository interface {
@@ -15,6 +15,6 @@ type Repository interface {
 	Delete(context.Context, string) error
 	List(context.Context, string) ([]Secret, error)
 
-	BeginTransaction(context.Context) (Transaction, error)
+	BeginTransaction(context.Context) (Repository, Transaction, error)
 	WithTransaction(context.Context, Transaction) (Repository, error)
 }

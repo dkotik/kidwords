@@ -1,6 +1,12 @@
 package service
 
-import "errors"
+import (
+	"errors"
+	"html/template"
+	"net/http"
+
+	"github.com/dkotik/htadaptor"
+)
 
 const (
 	DefaultKeyCount    = 12
@@ -15,6 +21,10 @@ type options struct {
 	KeyLength     uint8
 	ShardCount    uint8
 	QuorumCount   uint8
+	Adaptor       *htadaptor.Adaptor
+	ServeMux      *http.ServeMux
+	Template      *template.Template
+	PathPrefix    string
 }
 
 type Option func(*options) error
@@ -78,6 +88,43 @@ func WithShardCount(total, quorum uint8) Option {
 		}
 		o.ShardCount = total
 		o.QuorumCount = quorum
+		return nil
+	}
+}
+
+func WithAdaptor(adaptor htadaptor.Adaptor) Option {
+	return func(o *options) error {
+		if o.Adaptor != nil {
+			return errors.New("adaptor already set")
+		}
+		o.Adaptor = &adaptor
+		return nil
+	}
+}
+
+func WithMux(mux *http.ServeMux, path string) Option {
+	return func(o *options) error {
+		if mux == nil {
+			return errors.New("nil serve mux")
+		}
+		if o.ServeMux != nil {
+			return errors.New("serve mux already set")
+		}
+		o.ServeMux = mux
+		o.PathPrefix = path
+		return nil
+	}
+}
+
+func WithTemplate(t *template.Template) Option {
+	return func(o *options) error {
+		if t == nil {
+			return errors.New("nil template")
+		}
+		if o.Template != nil {
+			return errors.New("template already set")
+		}
+		o.Template = t
 		return nil
 	}
 }
