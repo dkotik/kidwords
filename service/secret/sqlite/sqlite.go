@@ -59,6 +59,7 @@ func New(conn *sqlite.Conn, withOptions ...Option) (s *sqRepository, err error) 
 		conn: conn,
 	}
 
+	o.TableName = escapeIdentifier(o.TableName)
 	if s.stmtCreate, err = conn.Prepare(
 		fmt.Sprintf(`
       INSERT INTO %s(id, user_id, name, type, salted_hash, created_at, updated_at) VALUES(?, ?, ?, ?, ?, ?, ?)
@@ -77,16 +78,15 @@ func New(conn *sqlite.Conn, withOptions ...Option) (s *sqRepository, err error) 
 
 	if s.stmtUpdate, err = conn.Prepare(
 		fmt.Sprintf(`
-      UPDATE %s SET user_id=?, name=?, type=?, salted_hash=?, created_at=?, updated_at=?, last_accepted_at=? WHERE id=?`, o.TableName),
+      UPDATE %s SET name=?, type=?, salted_hash=?, created_at=?, updated_at=?, last_accepted_at=? WHERE id=?`, o.TableName),
 	); err != nil {
 		return nil, err
 	}
 
 	if s.stmtList, err = conn.Prepare(
 		fmt.Sprintf(`
-      SELECT
-        id, user_id, name, type, salted_hash, created_at, updated_at, last_accepted_at
-      FROM %s WHERE user_id=? ORDER BY created_at DESC`, o.TableName),
+      SELECT id, name, type, salted_hash, created_at, updated_at, last_accepted_at
+      FROM %s WHERE user_id=? OR 1`, o.TableName),
 	); err != nil {
 		return nil, err
 	}

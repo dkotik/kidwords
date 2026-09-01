@@ -12,7 +12,7 @@ import (
 )
 
 func (r *sqRepository) Create(ctx context.Context, s secret.Secret) (ID string, err error) {
-	defer r.BindContext(ctx)
+	defer r.BindContext(ctx)()
 	if err = r.stmtCreate.Reset(); err != nil {
 		return ID, err
 	}

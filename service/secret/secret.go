@@ -11,7 +11,10 @@ const (
 	TypePaperKey = "kidwordsPaperKey"
 )
 
-var ErrDuplicateSecretName = errors.New("duplicate secret name")
+var (
+	ErrDuplicateSecretName = errors.New("duplicate secret name")
+	ErrNotFound            = errors.New("secret not found")
+)
 
 type Secret struct {
 	ID             string
