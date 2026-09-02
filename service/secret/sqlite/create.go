@@ -51,7 +51,7 @@ func (r *sqRepository) Create(ctx context.Context, s secret.Secret) (ID string, 
 				if s.ID == "" {
 					return ID, err
 				}
-				return s.ID, secret.ErrDuplicateSecretName
+				return s.ID, secret.ErrDuplicateSecretID
 			case lib.SQLITE_CONSTRAINT_UNIQUE:
 				return s.ID, secret.ErrDuplicateSecretName
 			default:

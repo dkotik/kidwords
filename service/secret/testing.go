@@ -11,6 +11,10 @@ import (
 
 func NewSecretsRepositoryTest(r Repository) func(*testing.T) {
 	return func(t *testing.T) {
+		if r == nil {
+			t.Fatal("nil repository")
+		}
+
 		now := time.Now()
 		secret := Secret{
 			UserID:    "user1",
@@ -33,7 +37,7 @@ func NewSecretsRepositoryTest(r Repository) func(*testing.T) {
 		}
 		defer func() {
 			if err = r.Delete(ctx, secret.ID); err != nil {
-				t.Fatal(err)
+				t.Fatal("unable to delete secret:", err)
 			}
 			s2, err = r.Retrieve(ctx, secret.ID)
 			if err == nil {

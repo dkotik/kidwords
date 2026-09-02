@@ -12,6 +12,7 @@ const (
 )
 
 var (
+	ErrDuplicateSecretID   = errors.New("duplicate secret ID")
 	ErrDuplicateSecretName = errors.New("duplicate secret name")
 	ErrNotFound            = errors.New("secret not found")
 )
