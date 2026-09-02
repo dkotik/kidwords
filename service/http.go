@@ -6,7 +6,6 @@ import (
 	"fmt"
 	"html/template"
 	"net/http"
-	"path"
 
 	"github.com/dkotik/htadaptor"
 	"github.com/dkotik/htadaptor/staticfs"
@@ -22,6 +21,18 @@ const (
 //go:embed media/*
 var assets embed.FS
 
+func LoadDefaultTemplates() (*template.Template, error) {
+	data, err := assets.ReadFile("media/templates.html")
+	if err != nil {
+		return nil, fmt.Errorf("unable to load templates: %w", err)
+	}
+	tmpl, err := template.New("").Parse(string(data))
+	if err != nil {
+		return nil, fmt.Errorf("unable to parse templates: %w", err)
+	}
+	return tmpl, nil
+}
+
 func (s *Service) MountMux(
 	mux *http.ServeMux,
 	adaptor htadaptor.Adaptor,
@@ -34,6 +45,12 @@ func (s *Service) MountMux(
 	if pathPrefix == "" {
 		pathPrefix = "/"
 	}
+	if tmpl == nil {
+		tmpl, err = LoadDefaultTemplates()
+		if err != nil {
+			return err
+		}
+	}
 
 	head := tmpl.Lookup(TemplateHeadName)
 	if head == nil {
@@ -41,14 +58,14 @@ func (s *Service) MountMux(
 		if err != nil {
 			return fmt.Errorf("unable to load HTMX source: %w", err)
 		}
-		htmxPath := path.Join(pathPrefix, "htmx.min.js")
+		htmxPath := pathPrefix + "htmx.min.js"
 		mux.Handle(htmxPath, staticfs.NewFastFileSystemFileWithContentType(htmx, "text/javascript"))
 
-		bulma, err := assets.ReadFile("bulma.min.css")
+		bulma, err := assets.ReadFile("media/bulma.min.css")
 		if err != nil {
 			return fmt.Errorf("unable to load Bulma source: %w", err)
 		}
-		bulmaPath := path.Join(pathPrefix, "bulma.min.css")
+		bulmaPath := pathPrefix + "bulma.min.css"
 		mux.Handle(bulmaPath, staticfs.NewFastFileSystemFileWithContentType(bulma, "text/css"))
 
 		head, err := assets.ReadFile("media/head.html")
