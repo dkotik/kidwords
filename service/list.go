@@ -16,7 +16,7 @@ type keyListView struct {
 	PaperKeys []secret.Secret
 }
 
-func (s *Service) list(ctx context.Context) (view keyListView, err error) {
+func (s *Service) List(ctx context.Context) (view keyListView, err error) {
 	view.User, view.lc, err = s.unpackContext(ctx)
 	if err != nil {
 		return view, err

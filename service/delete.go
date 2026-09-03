@@ -5,7 +5,7 @@ import (
 	"fmt"
 )
 
-func (s *Service) delete(ctx context.Context, ID string) (any, error) {
+func (s *Service) Delete(ctx context.Context, ID string) (any, error) {
 	user, lc, err := s.unpackContext(ctx)
 	if err != nil {
 		return nil, err
@@ -26,5 +26,5 @@ func (s *Service) delete(ctx context.Context, ID string) (any, error) {
 	if err != nil {
 		return nil, err
 	}
-	return s.list(ctx)
+	return s.List(ctx)
 }

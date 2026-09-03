@@ -57,7 +57,7 @@ func (r *UpdateKeyRequest) Validate(context.Context) error {
 	return nil
 }
 
-func (s *Service) updateKeyFormPost(ctx context.Context, req *UpdateKeyRequest) (form *FormUpdateKey, err error) {
+func (s *Service) UpdateKeyFormPost(ctx context.Context, req *UpdateKeyRequest) (form *FormUpdateKey, err error) {
 	form = &FormUpdateKey{}
 	form.FormCreateKey, err = s.newFormCreateKey(ctx)
 	if err != nil {

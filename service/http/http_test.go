@@ -1,4 +1,4 @@
-package service
+package http
 
 import (
 	"context"
@@ -12,6 +12,7 @@ import (
 	"testing"
 
 	"github.com/dkotik/htadaptor"
+	"github.com/dkotik/kidwords/service"
 	"github.com/dkotik/kidwords/service/secret/mock"
 )
 
@@ -31,34 +32,35 @@ func (u mockUser) GetName() string {
 
 type mockAuthenticator struct{}
 
-func (m mockAuthenticator) Authenticate(context.Context) (User, error) {
+func (m mockAuthenticator) Authenticate(context.Context) (service.User, error) {
 	return mockUser{}, nil
 }
 
 func TestHandlers(t *testing.T) {
-	prefix := "/"
+	const prefix = "/"
 	repository := mock.New()
-	service, err := New(
+	service, err := service.New(
 		mockAuthenticator{},
 		repository,
 	)
 	if err != nil {
 		t.Fatal(err)
 	}
-	mux := http.NewServeMux()
-	if err = service.MountMux(
-		mux,
-		htadaptor.New(
-			htadaptor.WithErrorHandler(htadaptor.ErrorHandlerFunc(
-				func(w http.ResponseWriter, r *http.Request, err error) error {
-					t.Log("request:", r.Method, r.URL.String())
-					t.Fatal(err)
-					return nil
-				})),
+	mux, err := New(
+		service,
+		WithPathPrefix(prefix),
+		WithAdaptor(
+			htadaptor.New(
+				htadaptor.WithErrorHandler(htadaptor.ErrorHandlerFunc(
+					func(w http.ResponseWriter, r *http.Request, err error) error {
+						t.Log("request:", r.Method, r.URL.String())
+						t.Fatal(err)
+						return nil
+					})),
+			),
 		),
-		prefix,
-		nil,
-	); err != nil {
+	)
+	if err != nil {
 		t.Fatal(err)
 	}
 	server := newMockServer(t, mux)

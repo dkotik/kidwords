@@ -57,7 +57,7 @@ func (s *Service) createKeyFormView(ctx context.Context) (any, error) {
 	return f, nil
 }
 
-func (s *Service) createKeyFormPost(ctx context.Context, name string) (_ *FormCreateKey, err error) {
+func (s *Service) CreateKeyFormPost(ctx context.Context, name string) (_ *FormCreateKey, err error) {
 	form, err := s.newFormCreateKey(ctx)
 	if err != nil {
 		return nil, err
