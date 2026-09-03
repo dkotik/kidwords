@@ -1,7 +1,6 @@
 package http
 
 import (
-	"embed"
 	"errors"
 	"fmt"
 	"html/template"
@@ -12,30 +11,6 @@ import (
 	"github.com/dkotik/htadaptor/staticfs"
 	"github.com/dkotik/kidwords/service"
 )
-
-const (
-	TemplateNamePrefix = "kidwords/"
-	TemplateHeadName   = TemplateNamePrefix + "header.html"
-	TemplatePageList   = TemplateNamePrefix + "list.html"
-	TemplateCreatePage = TemplateNamePrefix + "create.html"
-	TemplateUpdatePage = TemplateNamePrefix + "update.html"
-	TemplateListPage   = TemplateNamePrefix + "list.html"
-)
-
-//go:embed media/*
-var assets embed.FS
-
-func LoadDefaultTemplates() (*template.Template, error) {
-	data, err := assets.ReadFile("media/templates.html")
-	if err != nil {
-		return nil, fmt.Errorf("unable to load templates: %w", err)
-	}
-	tmpl, err := template.New("").Parse(string(data))
-	if err != nil {
-		return nil, fmt.Errorf("unable to parse templates: %w", err)
-	}
-	return tmpl, nil
-}
 
 func New(s *service.Service, withOptions ...Option) (_ http.Handler, err error) {
 	if s == nil {
@@ -136,9 +111,23 @@ func New(s *service.Service, withOptions ...Option) (_ http.Handler, err error) 
 		return nil, fmt.Errorf("unable to create a delete key form handler: %w", err)
 	}
 
+	page, err := assets.ReadFile("media/page.html")
+	if err != nil {
+		return nil, fmt.Errorf("unable to read page template: %w", err)
+	}
+	pageTemplate, err := template.New("").Parse(string(page))
+	if err != nil {
+		return nil, fmt.Errorf("unable to parse page template: %w", err)
+	}
+
 	list, err := o.Adaptor.AdaptNullaryFunc(
 		s.List,
-		htadaptor.WithTemplate(o.Templates.Lookup(TemplateListPage)),
+		htadaptor.WithEncoder(
+			pageRenderer{
+				Page: pageTemplate,
+				Main: o.Templates.Lookup(TemplateListPage),
+			},
+		),
 	)
 	if err != nil {
 		return nil, fmt.Errorf("unable to create a list key form handler: %w", err)

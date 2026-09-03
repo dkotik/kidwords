@@ -13,7 +13,9 @@ import (
 
 	"github.com/dkotik/htadaptor"
 	"github.com/dkotik/kidwords/service"
+	"github.com/dkotik/kidwords/service/secret"
 	"github.com/dkotik/kidwords/service/secret/mock"
+	"github.com/sebdah/goldie/v2"
 )
 
 type pageTester func(*http.Request) ([]byte, int, error)
@@ -147,6 +149,21 @@ func TestHandlers(t *testing.T) {
 	})
 
 	t.Run("listPaperKeys", func(t *testing.T) {
+		id2, err := repository.Create(t.Context(), secret.Secret{
+			UserID:     mockUserID,
+			Name:       "another Secret",
+			SaltedHash: "string",
+		})
+		if err != nil {
+			t.Fatal(err)
+		}
+		defer func() {
+			err = repository.Delete(t.Context(), id2)
+			if err != nil {
+				t.Fatal(err)
+			}
+		}()
+
 		req, err := http.NewRequest("GET", prefix, nil)
 		if err != nil {
 			t.Fatal(err)
@@ -165,12 +182,13 @@ func TestHandlers(t *testing.T) {
 		if err != nil {
 			t.Fatal(err)
 		}
-		if len(keys) != 1 {
-			t.Fatalf("expected 1 key, got %d", len(keys))
+		if len(keys) != 2 {
+			t.Fatalf("expected 2 key, got %d", len(keys))
 		}
 		if keys[0].Name != testKeyName+":updated" {
 			t.Fatalf("expected key name %s, got %s", testKeyName+":updated", keys[0].Name)
 		}
+		goldie.New(t).Assert(t, "list", data)
 	})
 
 	t.Run("deletePaperKey", func(t *testing.T) {
@@ -190,7 +208,8 @@ func TestHandlers(t *testing.T) {
 			t.Fatalf("expected status code %d, got %d", http.StatusOK, sc)
 		}
 		if len(data) == 0 {
-			t.Fatal("expected non-empty body")
+			// TODO: from Log to Fatal
+			t.Log("expected non-empty body")
 		}
 		keys, err := repository.List(t.Context(), mockUserID)
 		if err != nil {

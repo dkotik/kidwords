@@ -2,13 +2,14 @@ package mock
 
 import (
 	"context"
-	"fmt"
 	"slices"
 	"sync"
 	"uuid"
 
 	"github.com/dkotik/kidwords/service/secret"
 )
+
+var uuidSpace = uuid.MustParse("6ba7b814-9dad-11d1-80b4-00c04fd430c8")
 
 type mock struct {
 	mu          *sync.Mutex
@@ -25,9 +26,10 @@ func New() secret.Repository {
 func (m *mock) Create(_ context.Context, s secret.Secret) (string, error) {
 	m.mu.Lock()
 	defer m.mu.Unlock()
-	if s.ID == "" {
-		s.ID = uuid.New().String()
-	}
+	s.ID = newUUID(s.Name + s.Type).String()
+	// if s.ID == "" {
+	// s.ID = uuid.New().String()
+	// }
 	userSecrets, _ := m.userSecrets[s.UserID]
 	m.userSecrets[s.UserID] = append(userSecrets, s)
 	return s.ID, nil
@@ -66,7 +68,7 @@ func (m *mock) Delete(_ context.Context, ID string) error {
 	for i, userSecrets := range m.userSecrets {
 		for j, secret := range userSecrets {
 			if secret.ID == ID {
-				fmt.Println(secret.ID, ID)
+				// fmt.Println(secret.ID, ID)
 				// panic("found")
 				m.userSecrets[i] = slices.Delete(userSecrets, j, j+1)
 				return nil
