@@ -3,6 +3,7 @@ package service
 import (
 	"context"
 	"crypto/rand"
+	"fmt"
 	"strings"
 	"time"
 	"uuid"
@@ -14,26 +15,50 @@ import (
 
 type FormCreateKey struct {
 	lc           *i18n.Localizer
+	Locale       string
 	User         User
 	Secret       kidwords.Secret
 	KeyName      string
+	KeyNameLabel string
 	KeyNameError string
 }
 
-func (s *Service) createKeyFormView(ctx context.Context) (any, error) {
-	user, lc, err := s.unpackContext(ctx)
+func (f *FormCreateKey) Title() (string, error) {
+	return f.lc.Localize(&i18n.LocalizeConfig{
+		DefaultMessage: &i18n.Message{
+			ID:    "KidwordsCreateFormTitle",
+			Other: "Create New Paper Key",
+		},
+	})
+}
+
+func (s *Service) newFormCreateKey(ctx context.Context) (f *FormCreateKey, err error) {
+	f = &FormCreateKey{}
+	f.User, f.lc, err = s.unpackContext(ctx)
 	if err != nil {
 		return nil, err
 	}
-	return &FormCreateKey{
-		lc:   lc,
-		User: user,
-	}, nil
+	knl, tag, err := f.lc.LocalizeWithTag(&i18n.LocalizeConfig{
+		DefaultMessage: &i18n.Message{
+			ID:    "KidwordsKeyNameLabel",
+			Other: "key name",
+		},
+	})
+	f.KeyNameLabel = knl
+	f.Locale = tag.String()
+	return f, nil
+}
+
+func (s *Service) createKeyFormView(ctx context.Context) (any, error) {
+	f, err := s.newFormCreateKey(ctx)
+	if err != nil {
+		return nil, err
+	}
+	return f, nil
 }
 
 func (s *Service) createKeyFormPost(ctx context.Context, name string) (_ *FormCreateKey, err error) {
-	form := &FormCreateKey{}
-	form.User, form.lc, err = s.unpackContext(ctx)
+	form, err := s.newFormCreateKey(ctx)
 	if err != nil {
 		return nil, err
 	}
@@ -58,14 +83,11 @@ func (s *Service) createKeyFormPost(ctx context.Context, name string) (_ *FormCr
 
 	rp, tx, err := s.repository.BeginTransaction(ctx)
 	if err != nil {
-		return form, err
+		return form, fmt.Errorf("unable to begin transaction: %w", err)
 	}
 	defer tx.Close(&err)
-	rp, err = s.repository.WithTransaction(ctx, tx)
-	if err != nil {
-		return form, err
-	}
-	keys, err := rp.List(ctx, form.User.GetID())
+	userID := form.User.GetID()
+	keys, err := rp.List(ctx, userID)
 	if err != nil {
 		return form, err
 	}
@@ -78,7 +100,7 @@ func (s *Service) createKeyFormPost(ctx context.Context, name string) (_ *FormCr
 	}
 	_, err = rp.Create(ctx, secret.Secret{
 		ID:         uuid.New().String(),
-		UserID:     form.User.GetID(),
+		UserID:     userID,
 		Name:       form.KeyName,
 		Type:       secret.TypePaperKey,
 		SaltedHash: argonHash.String(),

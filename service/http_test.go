@@ -3,10 +3,12 @@ package service
 import (
 	"context"
 	"errors"
+	"fmt"
 	"io"
 	"net/http"
 	"net/http/httptest"
 	"net/url"
+	"strings"
 	"testing"
 
 	"github.com/dkotik/htadaptor"
@@ -17,8 +19,10 @@ type pageTester func(*http.Request) ([]byte, int, error)
 
 type mockUser struct{}
 
+const mockUserID = "mockUserID"
+
 func (u mockUser) GetID() string {
-	return "mockUserID"
+	return mockUserID
 }
 
 func (u mockUser) GetName() string {
@@ -33,9 +37,10 @@ func (m mockAuthenticator) Authenticate(context.Context) (User, error) {
 
 func TestHandlers(t *testing.T) {
 	prefix := "/"
+	repository := mock.New()
 	service, err := New(
 		mockAuthenticator{},
-		mock.New(),
+		repository,
 	)
 	if err != nil {
 		t.Fatal(err)
@@ -43,7 +48,14 @@ func TestHandlers(t *testing.T) {
 	mux := http.NewServeMux()
 	if err = service.MountMux(
 		mux,
-		htadaptor.New(),
+		htadaptor.New(
+			htadaptor.WithErrorHandler(htadaptor.ErrorHandlerFunc(
+				func(w http.ResponseWriter, r *http.Request, err error) error {
+					t.Log("request:", r.Method, r.URL.String())
+					t.Fatal(err)
+					return nil
+				})),
+		),
 		prefix,
 		nil,
 	); err != nil {
@@ -76,6 +88,116 @@ func TestHandlers(t *testing.T) {
 		}
 	})
 
+	const testKeyName = "test-key"
+	var testKeyID string
+	t.Run("createPaperKey", func(t *testing.T) {
+		form := url.Values{}
+		form.Set("name", testKeyName)
+		req, err := http.NewRequest("POST", prefix, strings.NewReader(form.Encode()))
+		if err != nil {
+			t.Fatal(err)
+		}
+		req.Header.Set("Content-Type", "application/x-www-form-urlencoded")
+
+		data, sc, err := server(req)
+		if err != nil {
+			t.Fatal(err)
+		}
+		if sc != http.StatusOK {
+			t.Fatalf("expected status code %d, got %d", http.StatusOK, sc)
+		}
+		if len(data) == 0 {
+			t.Fatal("expected non-empty body")
+		}
+		keys, err := repository.List(t.Context(), mockUserID)
+		if err != nil {
+			t.Fatal(err)
+		}
+		if len(keys) != 1 {
+			t.Fatalf("expected 1 key, got %d", len(keys))
+		}
+		if keys[0].Name != testKeyName {
+			t.Fatalf("expected key name %s, got %s", testKeyName, keys[0].Name)
+		}
+		testKeyID = keys[0].ID
+	})
+
+	t.Run("updatePaperKey", func(t *testing.T) {
+		form := url.Values{}
+		form.Set("id", testKeyID)
+		form.Set("name", testKeyName+":updated")
+		req, err := http.NewRequest("PUT", prefix, strings.NewReader(form.Encode()))
+		if err != nil {
+			t.Fatal(err)
+		}
+		req.Header.Set("Content-Type", "application/x-www-form-urlencoded")
+
+		data, sc, err := server(req)
+		if err != nil {
+			t.Fatal(err)
+		}
+		if sc != http.StatusOK {
+			t.Fatalf("expected status code %d, got %d", http.StatusOK, sc)
+		}
+		if len(data) == 0 {
+			t.Fatal("expected non-empty body")
+		}
+	})
+
+	t.Run("listPaperKeys", func(t *testing.T) {
+		req, err := http.NewRequest("GET", prefix, nil)
+		if err != nil {
+			t.Fatal(err)
+		}
+		data, sc, err := server(req)
+		if err != nil {
+			t.Fatal(err)
+		}
+		if sc != http.StatusOK {
+			t.Fatalf("expected status code %d, got %d", http.StatusOK, sc)
+		}
+		if len(data) == 0 {
+			t.Fatal("expected non-empty body")
+		}
+		keys, err := repository.List(t.Context(), mockUserID)
+		if err != nil {
+			t.Fatal(err)
+		}
+		if len(keys) != 1 {
+			t.Fatalf("expected 1 key, got %d", len(keys))
+		}
+		if keys[0].Name != testKeyName+":updated" {
+			t.Fatalf("expected key name %s, got %s", testKeyName+":updated", keys[0].Name)
+		}
+	})
+
+	t.Run("deletePaperKey", func(t *testing.T) {
+		req, err := http.NewRequest(
+			"DELETE",
+			fmt.Sprintf("%s?delete=%s", prefix, testKeyID),
+			nil,
+		)
+		if err != nil {
+			t.Fatal(err)
+		}
+		data, sc, err := server(req)
+		if err != nil {
+			t.Fatal(err)
+		}
+		if sc != http.StatusOK {
+			t.Fatalf("expected status code %d, got %d", http.StatusOK, sc)
+		}
+		if len(data) == 0 {
+			t.Fatal("expected non-empty body")
+		}
+		keys, err := repository.List(t.Context(), mockUserID)
+		if err != nil {
+			t.Fatal(err)
+		}
+		if len(keys) != 0 {
+			t.Fatalf("expected 0 keys, got %d", len(keys))
+		}
+	})
 }
 
 func newMockServer(t testing.TB, h http.Handler) pageTester {
@@ -87,10 +209,13 @@ func newMockServer(t testing.TB, h http.Handler) pageTester {
 		t.Fatal(err)
 	}
 	return func(r *http.Request) (body []byte, statusCode int, err error) {
-		cp := prefix.Clone()
-		cp.Path = r.URL.Path
-		cp.RawPath = r.URL.RawPath
-		r.URL = cp
+		r.URL.Scheme = prefix.Scheme
+		r.URL.Host = prefix.Host
+		// cp := prefix.Clone()
+		// cp.Path = r.URL.Path
+		// cp.RawPath = r.URL.RawPath
+		// cp.RawQuery = r.URL.RawQuery
+		// r.URL = cp
 		// r.URL.Path = prefix.JoinPath(r.URL.Path).String()
 		// r.URL.RawPath = prefix.JoinPath(r.URL.RawPath).String()
 		resp, err := client.Do(r)

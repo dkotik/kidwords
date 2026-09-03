@@ -51,6 +51,9 @@ func NewSecretsRepositoryTest(r Repository) func(*testing.T) {
 		if s2.ID == "" {
 			t.Fatal("ID is empty")
 		}
+		if s2.UserID == "" {
+			t.Fatal("UserID is empty")
+		}
 		if err = secret.IsEqual(s2); err != nil {
 			t.Fatal(err)
 		}
@@ -72,6 +75,9 @@ func NewSecretsRepositoryTest(r Repository) func(*testing.T) {
 		}
 		if s2.ID == "" {
 			t.Fatal("ID is empty")
+		}
+		if s2.UserID == "" {
+			t.Fatal("UserID is empty")
 		}
 		s2.UpdatedAt = secret.UpdatedAt
 		if err = secret.IsEqual(s2); err != nil {

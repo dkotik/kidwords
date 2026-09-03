@@ -84,5 +84,5 @@ func (m *mock) List(_ context.Context, userID string) ([]secret.Secret, error) {
 			return userSecrets, nil
 		}
 	}
-	return nil, secret.ErrNotFound
+	return nil, nil
 }

@@ -8,14 +8,17 @@ import (
 	"net/http"
 
 	"github.com/dkotik/htadaptor"
+	"github.com/dkotik/htadaptor/extract"
 	"github.com/dkotik/htadaptor/staticfs"
 )
 
 const (
-	TemplateNamePrefix = "kidwords:"
-	TemplateHeadName   = TemplateNamePrefix + "head"
-	TemplatePageList   = TemplateNamePrefix + "list"
-	// TemplatePageName   = TemplateNamePrefix + "page"
+	TemplateNamePrefix = "kidwords/"
+	TemplateHeadName   = TemplateNamePrefix + "header.html"
+	TemplatePageList   = TemplateNamePrefix + "list.html"
+	TemplateCreatePage = TemplateNamePrefix + "create.html"
+	TemplateUpdatePage = TemplateNamePrefix + "update.html"
+	TemplateListPage   = TemplateNamePrefix + "list.html"
 )
 
 //go:embed media/*
@@ -68,15 +71,62 @@ func (s *Service) MountMux(
 		bulmaPath := pathPrefix + "bulma.min.css"
 		mux.Handle(bulmaPath, staticfs.NewFastFileSystemFileWithContentType(bulma, "text/css"))
 
-		head, err := assets.ReadFile("media/head.html")
+		head, err := assets.ReadFile("media/header.html")
 		if err != nil {
-			return fmt.Errorf("unable to load head.html template: %w", err)
+			return fmt.Errorf("unable to load header.html template: %w", err)
 		}
 		tmpl, err = tmpl.New(TemplateHeadName).Parse(string(head))
 		if err != nil {
 			return fmt.Errorf("unable to create a <head> template: %w", err)
 		}
 	}
+
+	create, err := adaptor.AdaptStringFunc(
+		s.createKeyFormPost,
+		extract.StringValueExtractorFunc(func(r *http.Request) (string, error) {
+			return r.FormValue("name"), nil
+		}),
+		htadaptor.WithTemplate(tmpl.Lookup(TemplateCreatePage)),
+	)
+	if err != nil {
+		return fmt.Errorf("unable to create a create key form handler: %w", err)
+	}
+
+	update, err := adaptor.AdaptFunc(
+		s.updateKeyFormPost,
+		htadaptor.WithTemplate(tmpl.Lookup(TemplateUpdatePage)),
+	)
+	if err != nil {
+		return fmt.Errorf("unable to create a create key form handler: %w", err)
+	}
+
+	idExtractor, err := extract.NewQueryValueExtractor("delete")
+	if err != nil {
+		return err
+	}
+	delete, err := adaptor.AdaptStringFunc(
+		s.delete,
+		idExtractor,
+		htadaptor.WithTemplate(tmpl.Lookup(TemplateListPage)),
+	)
+	if err != nil {
+		return fmt.Errorf("unable to create a delete key form handler: %w", err)
+	}
+
+	list, err := adaptor.AdaptNullaryFunc(
+		s.list,
+		htadaptor.WithTemplate(tmpl.Lookup(TemplateListPage)),
+	)
+	if err != nil {
+		return fmt.Errorf("unable to create a create key form handler: %w", err)
+	}
+
+	mux.Handle(pathPrefix, htadaptor.NewMethodMux(&htadaptor.MethodSwitch{
+		Get:    list,
+		Post:   create,
+		Put:    update,
+		Delete: delete,
+	}))
 
 	return nil
 }

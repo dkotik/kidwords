@@ -3,48 +3,52 @@ package service
 import (
 	"context"
 	"errors"
+	"fmt"
 	"strings"
 	"time"
 
-	"github.com/dkotik/kidwords/service/secret"
 	"github.com/nicksnyder/go-i18n/v2/i18n"
 )
 
 type FormUpdateKey struct {
-	lc           *i18n.Localizer
-	User         User
-	UUID         string
-	KeyName      string
-	KeyNameError string
+	*FormCreateKey
+	UUID string
+}
+
+func (f *FormUpdateKey) Title() (string, error) {
+	return f.lc.Localize(&i18n.LocalizeConfig{
+		DefaultMessage: &i18n.Message{
+			ID:    "KidwordsUpdateFormTitle",
+			Other: "Update Paper Key",
+		},
+	})
 }
 
 func (s *Service) updateKeyFormView(ctx context.Context, UUID string) (any, error) {
-	user, lc, err := s.unpackContext(ctx)
-	if err != nil {
-		return nil, err
-	}
 	secret, err := s.repository.Retrieve(ctx, UUID)
 	if err != nil {
 		return nil, err
 	}
-	if secret.UserID != user.GetID() {
-		return nil, newNotFoundError(lc)
+	f, err := s.newFormCreateKey(ctx)
+	if err != nil {
+		return nil, err
+	}
+	if secret.UserID != f.User.GetID() {
+		return nil, newNotFoundError(f.lc)
 	}
 	return &FormUpdateKey{
-		lc:      lc,
-		User:    user,
-		UUID:    UUID,
-		KeyName: secret.Name,
+		FormCreateKey: f,
+		UUID:          UUID,
 	}, nil
 }
 
 type UpdateKeyRequest struct {
-	UUID string
+	ID   string
 	Name string
 }
 
-func (r *UpdateKeyRequest) Validate() error {
-	if r.UUID == "" {
+func (r *UpdateKeyRequest) Validate(context.Context) error {
+	if r.ID == "" {
 		return errors.New("UUID is required")
 	}
 	if r.Name == "" {
@@ -53,18 +57,24 @@ func (r *UpdateKeyRequest) Validate() error {
 	return nil
 }
 
-func (s *Service) updateKeyFormPost(ctx context.Context, req *UpdateKeyRequest) (_ *FormUpdateKey, err error) {
-	form := &FormUpdateKey{}
-	user, lc, err := s.unpackContext(ctx)
+func (s *Service) updateKeyFormPost(ctx context.Context, req *UpdateKeyRequest) (form *FormUpdateKey, err error) {
+	form = &FormUpdateKey{}
+	form.FormCreateKey, err = s.newFormCreateKey(ctx)
 	if err != nil {
 		return nil, err
 	}
-	current, err := s.repository.Retrieve(ctx, req.UUID)
+
+	rp, tx, err := s.repository.BeginTransaction(ctx)
+	if err != nil {
+		return form, fmt.Errorf("unable to begin transaction: %w", err)
+	}
+	defer tx.Close(&err)
+	key, err := rp.Retrieve(ctx, req.ID)
 	if err != nil {
 		return nil, err
 	}
-	if current.UserID != user.GetID() {
-		return nil, newNotFoundError(lc)
+	if key.UserID != form.User.GetID() {
+		return nil, newNotFoundError(form.lc)
 	}
 	form.KeyName = strings.TrimSpace(req.Name)
 	if form.KeyName == "" {
@@ -75,14 +85,9 @@ func (s *Service) updateKeyFormPost(ctx context.Context, req *UpdateKeyRequest) 
 		return form, err
 	}
 
-	err = s.repository.Update(ctx, secret.Secret{
-		ID:         req.UUID,
-		Name:       form.KeyName,
-		Type:       secret.TypePaperKey,
-		SaltedHash: current.SaltedHash,
-		CreatedAt:  current.CreatedAt,
-		UpdatedAt:  time.Now(),
-	})
+	key.Name = form.KeyName
+	key.UpdatedAt = time.Now()
+	err = rp.Update(ctx, key)
 	if err != nil {
 		return form, err
 	}
