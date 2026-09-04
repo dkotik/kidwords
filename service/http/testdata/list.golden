@@ -1,6 +1,49 @@
-<html>
+<html lang="en">
   <head>
     <title>My Paper Keys</title>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width,initial-scale=1" />
+    <script src="/assets/htmx.min.js"></script>
+    <style href="/assets/bulma.min.css" />
+    <style>
+      :root {
+        --base: #cfcfcf;
+        --text: #212121;
+      }
+
+      @media (prefers-color-scheme: dark) {
+        :root {
+          --base: #212121;
+          --text: #cfcfcf;
+        }
+      }
+
+      html {
+        color-scheme: dark light;
+      }
+
+      :root:has(#theme [value="light"]:checked) {
+        color-scheme: light;
+        --base: #cfcfcf;
+        --text: #212121;
+      }
+
+      :root:has(#theme [value="dark"]:checked) {
+        color-scheme: dark;
+        --base: #212121;
+        --text: #cfcfcf;
+      }
+
+      body {
+        color: var(--text);
+        background-color: var(--base);
+      }
+
+      body {
+        font-family: system-ui;
+        font-size: 1.5rem;
+      }
+    </style>
   </head>
   <body>
     <h2>50dfde58-6955-7e4e-c38d-59ee96f4fdbe</h2><h2>6c61681e-6ae1-8c71-180d-e4913bf7f419</h2>

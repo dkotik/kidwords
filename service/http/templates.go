@@ -4,22 +4,26 @@ import (
 	"embed"
 	"fmt"
 	"html/template"
-	"net/http"
-
-	"github.com/dkotik/htadaptor"
-)
-
-const (
-	TemplateNamePrefix = "kidwords/"
-	TemplateHeadName   = TemplateNamePrefix + "header.html"
-	TemplatePageList   = TemplateNamePrefix + "list.html"
-	TemplateCreatePage = TemplateNamePrefix + "create.html"
-	TemplateUpdatePage = TemplateNamePrefix + "update.html"
-	TemplateListPage   = TemplateNamePrefix + "list.html"
 )
 
 //go:embed media/*
 var assets embed.FS
+
+type Templates struct {
+	Page   *template.Template
+	List   *template.Template
+	Create *template.Template
+	Update *template.Template
+	Delete *template.Template
+}
+
+func (t Templates) isComplete() bool {
+	return t.Page != nil &&
+		t.List != nil &&
+		t.Create != nil &&
+		t.Update != nil &&
+		t.Delete != nil
+}
 
 func LoadDefaultTemplates() (*template.Template, error) {
 	data, err := assets.ReadFile("media/templates.html")
@@ -33,58 +37,18 @@ func LoadDefaultTemplates() (*template.Template, error) {
 	return tmpl, nil
 }
 
-var (
-	_ htadaptor.Encoder = (*pageRenderer)(nil)
-	// buffers                   = &sync.Pool{
-	// 	New: func() any {
-	// 		return &bytes.Buffer{}
-	// 	},
-	// }
-)
-
-type pageRenderer struct {
-	Page *template.Template
-	Main *template.Template
-}
-
-func NewPageRenderer(page, main *template.Template) htadaptor.Encoder {
-	return pageRenderer{
-		Page: page,
-		Main: main,
-	}
-}
-
-func (r pageRenderer) Encode(
-	w http.ResponseWriter,
-	req *http.Request,
-	statusCode int,
-	v any,
-) (err error) {
-	tmpl, err := r.Page.Clone()
+func NewPageTemplate(page, content *template.Template) (*template.Template, error) {
+	tmpl, err := page.Clone()
 	if err != nil {
-		return err
+		return nil, err
 	}
-	tmpl, err = tmpl.AddParseTree("page", r.Page.Tree)
+	tmpl, err = tmpl.AddParseTree("content", content.Tree)
 	if err != nil {
-		return err
+		return nil, err
 	}
-	tmpl, err = tmpl.AddParseTree("content", r.Main.Tree)
-	if err != nil {
-		return err
+	tmpl = tmpl.Lookup(page.Name())
+	if tmpl == nil {
+		return nil, fmt.Errorf("root page template was not found")
 	}
-	w.Header().Set("Content-Type", "text/html; encoding=utf-8")
-	w.WriteHeader(statusCode)
-	return tmpl.Lookup("page").Execute(w, v)
-
-	// buf := buffers.Get().(*bytes.Buffer)
-	// defer buffers.Put(buf)
-	// buf.Reset()
-	// if err = r.Main.Execute(buf, v); err != nil {
-	// 	return err
-	// }
-	// w.Write(buf.Bytes())
-	// return r.Page.Execute(w, struct {
-	// 	any
-	// 	Content string
-	// }{v, buf.String()})
+	return tmpl, nil
 }
