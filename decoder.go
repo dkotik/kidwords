@@ -136,7 +136,7 @@ func (d *decoder) Decode(data []byte) (b []byte, err error) {
 			shardErrors = append(shardErrors, err)
 			continue
 		}
-		fmt.Println(index, len(share))
+		// fmt.Println(index, len(share))
 		shares = append(shares, share)
 	}
 
