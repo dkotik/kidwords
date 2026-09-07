@@ -2,6 +2,8 @@ package service
 
 import (
 	"errors"
+
+	"github.com/dkotik/kidwords"
 )
 
 const (
@@ -17,6 +19,7 @@ type options struct {
 	KeyLength     uint8
 	ShardCount    uint8
 	QuorumCount   uint8
+	Encoder       kidwords.Encoder
 }
 
 type Option func(*options) error
@@ -80,6 +83,19 @@ func WithShardCount(total, quorum uint8) Option {
 		}
 		o.ShardCount = total
 		o.QuorumCount = quorum
+		return nil
+	}
+}
+
+func WithEncoder(encoder kidwords.Encoder) Option {
+	return func(o *options) error {
+		if encoder == nil {
+			return errors.New("nil encoder")
+		}
+		if o.Encoder != nil {
+			return errors.New("encoder already set")
+		}
+		o.Encoder = encoder
 		return nil
 	}
 }

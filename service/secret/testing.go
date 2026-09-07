@@ -17,11 +17,12 @@ func NewSecretsRepositoryTest(r Repository) func(*testing.T) {
 
 		now := time.Now()
 		secret := Secret{
-			UserID:    "user1",
-			Type:      TypePaperKey,
-			Name:      "test",
-			CreatedAt: now,
-			UpdatedAt: now,
+			UserID:      "user1",
+			Type:        TypePaperKey,
+			Name:        "test",
+			Fingerprint: []byte(`12345`),
+			CreatedAt:   now,
+			UpdatedAt:   now,
 		}
 		var err error
 

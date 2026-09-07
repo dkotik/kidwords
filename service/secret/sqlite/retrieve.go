@@ -30,20 +30,25 @@ func (r *sqRepository) Retrieve(
 		result.Name = r.stmtRetrieve.ColumnText(1)
 		result.Type = r.stmtRetrieve.ColumnText(2)
 		result.SaltedHash = r.stmtRetrieve.ColumnText(3)
-		t, err = decodeTime(r.stmtRetrieve.ColumnText(4))
+		result.Fingerprint, err = decodeFingerprint(r.stmtRetrieve.ColumnText(4))
+		if err != nil {
+			err = fmt.Errorf("unable to decode fingerprint: %w", err)
+			break
+		}
+		t, err = decodeTime(r.stmtRetrieve.ColumnText(5))
 		if err != nil {
 			err = fmt.Errorf("unable to decode created_at time: %w", err)
 			break
 		}
 		result.CreatedAt = t
-		t, err = decodeTime(r.stmtRetrieve.ColumnText(5))
+		t, err = decodeTime(r.stmtRetrieve.ColumnText(6))
 		if err != nil {
 			err = fmt.Errorf("unable to decode updated_at time: %w", err)
 			break
 		}
 		result.UpdatedAt = t
-		if !r.stmtRetrieve.ColumnIsNull(6) {
-			t, err = decodeTime(r.stmtRetrieve.ColumnText(6))
+		if !r.stmtRetrieve.ColumnIsNull(7) {
+			t, err = decodeTime(r.stmtRetrieve.ColumnText(7))
 			if err != nil {
 				err = fmt.Errorf("unable to decode last_accepted_at time: %w", err)
 				break
@@ -81,20 +86,25 @@ func (r *sqRepository) List(
 		result.Name = r.stmtList.ColumnText(1)
 		result.Type = r.stmtList.ColumnText(2)
 		result.SaltedHash = r.stmtList.ColumnText(3)
-		t, err = decodeTime(r.stmtList.ColumnText(4))
+		result.Fingerprint, err = decodeFingerprint(r.stmtList.ColumnText(4))
+		if err != nil {
+			err = fmt.Errorf("unable to decode fingerprint: %w", err)
+			break
+		}
+		t, err = decodeTime(r.stmtList.ColumnText(5))
 		if err != nil {
 			err = fmt.Errorf("unable to decode created_at time: %w", err)
 			break
 		}
 		result.CreatedAt = t
-		t, err = decodeTime(r.stmtList.ColumnText(5))
+		t, err = decodeTime(r.stmtList.ColumnText(6))
 		if err != nil {
 			err = fmt.Errorf("unable to decode updated_at time: %w", err)
 			break
 		}
 		result.UpdatedAt = t
-		if !r.stmtList.ColumnIsNull(6) {
-			t, err = decodeTime(r.stmtList.ColumnText(6))
+		if !r.stmtList.ColumnIsNull(7) {
+			t, err = decodeTime(r.stmtList.ColumnText(7))
 			if err != nil {
 				err = fmt.Errorf("unable to decode last_accepted_at time: %w", err)
 				break

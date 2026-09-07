@@ -8,8 +8,11 @@ package service
 import (
 	"context"
 	"errors"
+	"fmt"
 
 	"github.com/dkotik/htadaptor"
+	"github.com/dkotik/kidwords"
+	"github.com/dkotik/kidwords/dictionary"
 	"github.com/dkotik/kidwords/service/secret"
 	"github.com/nicksnyder/go-i18n/v2/i18n"
 	"golang.org/x/text/language"
@@ -42,16 +45,17 @@ type Service struct {
 	keyLength     int
 	shardCount    int
 	quorumCount   int
+	encoder       kidwords.Encoder
 }
 
 func New(
 	authenticator Authenticator,
 	repository secret.Repository,
 	withOptions ...Option,
-) (*Service, error) {
+) (_ *Service, err error) {
 	o := &options{}
 	for _, opt := range withOptions {
-		if err := opt(o); err != nil {
+		if err = opt(o); err != nil {
 			return nil, err
 		}
 	}
@@ -73,6 +77,16 @@ func New(
 	if o.QuorumCount == 0 {
 		o.QuorumCount = DefaultQuorumCount
 	}
+	if o.Encoder == nil {
+		o.Encoder, err = kidwords.NewEncoder(
+			dictionary.EnglishFourLetterNouns,
+			dictionary.EnglishFourLetterVerbs,
+			3,
+		)
+		if err != nil {
+			return nil, fmt.Errorf("failed to create default encoder: %w", err)
+		}
+	}
 
 	return &Service{
 		authenticator: authenticator,
@@ -82,6 +96,7 @@ func New(
 		keyLength:     int(o.KeyLength),
 		shardCount:    int(o.ShardCount),
 		quorumCount:   int(o.QuorumCount),
+		encoder:       o.Encoder,
 	}, nil
 }
 

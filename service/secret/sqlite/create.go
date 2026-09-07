@@ -37,8 +37,9 @@ func (r *sqRepository) Create(ctx context.Context, s secret.Secret) (ID string, 
 	r.stmtCreate.BindText(3, s.Name)
 	r.stmtCreate.BindText(4, secret.TypePaperKey)
 	r.stmtCreate.BindText(5, s.SaltedHash)
-	r.stmtCreate.BindText(6, encodeTime(s.CreatedAt))
-	r.stmtCreate.BindText(7, encodeTime(s.UpdatedAt))
+	r.stmtCreate.BindText(6, encodeFingerprint(s.Fingerprint))
+	r.stmtCreate.BindText(7, encodeTime(s.CreatedAt))
+	r.stmtCreate.BindText(8, encodeTime(s.UpdatedAt))
 
 	ok := false
 	for {

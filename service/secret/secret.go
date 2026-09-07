@@ -23,6 +23,7 @@ type Secret struct {
 	Name           string
 	Type           string
 	SaltedHash     string
+	Fingerprint    []byte
 	CreatedAt      time.Time
 	UpdatedAt      time.Time
 	LastAcceptedAt time.Time

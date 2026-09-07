@@ -136,3 +136,16 @@ encoded:
   1 noun noun noun verb 2 noun noun noun verb 3 noun noun noun verb
   1 noun verb           2 noun verb           3 noun verb
   ```
+
+5. Paper keys should be determenistically fingerprinted in order to
+avoid the expensive password hashing for each paper key, when a user 
+authenticates using one of the keys. Take the last byte of every
+`Shard.Data`. It contains a random `x` value with which the resulting
+polynomial `y` value is computed.
+
+  A group of shards will have a rare combination of `.Index` to `x`
+  that can be matched with a secret without performing any cryptographic
+  operations on the secret. This combination does not reveal anything
+  about the secret.
+
+  Fingerprint values should have a unique constraint for each user.

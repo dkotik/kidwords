@@ -23,10 +23,11 @@ func (r *sqRepository) Update(ctx context.Context, s secret.Secret) (err error) 
 	r.stmtUpdate.BindText(1, s.Name)
 	r.stmtUpdate.BindText(2, s.Type)
 	r.stmtUpdate.BindText(3, s.SaltedHash)
-	r.stmtUpdate.BindText(4, encodeTime(s.CreatedAt))
-	r.stmtUpdate.BindText(5, encodeTime(time.Now()))
-	r.stmtUpdate.BindText(6, encodeTime(s.LastAcceptedAt))
-	r.stmtUpdate.BindText(7, s.ID)
+	r.stmtUpdate.BindText(4, encodeFingerprint(s.Fingerprint))
+	r.stmtUpdate.BindText(5, encodeTime(s.CreatedAt))
+	r.stmtUpdate.BindText(6, encodeTime(time.Now()))
+	r.stmtUpdate.BindText(7, encodeTime(s.LastAcceptedAt))
+	r.stmtUpdate.BindText(8, s.ID)
 
 	ok := false
 	for {

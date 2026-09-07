@@ -2,6 +2,7 @@ package sqlite
 
 import (
 	"context"
+	"encoding/base64"
 	"errors"
 	"fmt"
 	"strings"
@@ -19,6 +20,7 @@ const SecretsTableFields = `
       name                TEXT NOT NULL UNIQUE,
       type                TEXT NOT NULL,
       salted_hash         TEXT NOT NULL,
+      fingerprint         TEXT NOT NULL,
       created_at          TEXT NOT NULL,
       updated_at          TEXT NOT NULL,
       last_accepted_at    TEXT`
@@ -62,7 +64,7 @@ func New(conn *sqlite.Conn, withOptions ...Option) (s *sqRepository, err error) 
 	o.TableName = escapeIdentifier(o.TableName)
 	if s.stmtCreate, err = conn.Prepare(
 		fmt.Sprintf(`
-      INSERT INTO %s(id, user_id, name, type, salted_hash, created_at, updated_at) VALUES(?, ?, ?, ?, ?, ?, ?)
+      INSERT INTO %s(id, user_id, name, type, salted_hash, fingerprint, created_at, updated_at) VALUES(?, ?, ?, ?, ?, ?, ?, ?)
     `, o.TableName),
 	); err != nil {
 		return nil, err
@@ -70,7 +72,7 @@ func New(conn *sqlite.Conn, withOptions ...Option) (s *sqRepository, err error) 
 
 	if s.stmtRetrieve, err = conn.Prepare(
 		fmt.Sprintf(`
-      SELECT user_id, name, type, salted_hash, created_at, updated_at, last_accepted_at
+      SELECT user_id, name, type, salted_hash, fingerprint, created_at, updated_at, last_accepted_at
       FROM %s WHERE id=?`, o.TableName),
 	); err != nil {
 		return nil, err
@@ -78,14 +80,14 @@ func New(conn *sqlite.Conn, withOptions ...Option) (s *sqRepository, err error) 
 
 	if s.stmtUpdate, err = conn.Prepare(
 		fmt.Sprintf(`
-      UPDATE %s SET name=?, type=?, salted_hash=?, created_at=?, updated_at=?, last_accepted_at=? WHERE id=?`, o.TableName),
+      UPDATE %s SET name=?, type=?, salted_hash=?, fingerprint=?, created_at=?, updated_at=?, last_accepted_at=? WHERE id=?`, o.TableName),
 	); err != nil {
 		return nil, err
 	}
 
 	if s.stmtList, err = conn.Prepare(
 		fmt.Sprintf(`
-      SELECT id, name, type, salted_hash, created_at, updated_at, last_accepted_at
+      SELECT id, name, type, salted_hash, fingerprint, created_at, updated_at, last_accepted_at
       FROM %s WHERE user_id=? OR 1`, o.TableName),
 	); err != nil {
 		return nil, err
@@ -129,6 +131,14 @@ func escapeIdentifier(name string) string {
 	// Double quotes are escaped by doubling them in SQL identifiers
 	escaped := strings.ReplaceAll(name, `"`, `""`)
 	return fmt.Sprintf(`"%s"`, escaped)
+}
+
+func encodeFingerprint(f []byte) string {
+	return base64.RawStdEncoding.EncodeToString(f)
+}
+
+func decodeFingerprint(s string) ([]byte, error) {
+	return base64.RawStdEncoding.DecodeString(s)
 }
 
 func encodeTime(t time.Time) string {

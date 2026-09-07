@@ -124,6 +124,7 @@ func TestHandlers(t *testing.T) {
 			t.Fatalf("expected key name %s, got %s", testKeyName, keys[0].Name)
 		}
 		testKeyID = keys[0].ID
+		// goldie.New(t).Assert(t, "create", data)
 	})
 
 	t.Run("updatePaperKey", func(t *testing.T) {

@@ -4,8 +4,8 @@
     <title>{{ .Title }}</title>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width,initial-scale=1" />
-    <script src="/assets/htmx.min.js"></script>
-    <style href="/assets/bulma.min.css" />
+    <script src="htmx.min.js"></script>
+    <style href="bulma.min.css" />
     <style>
       :root {
         --base: #cfcfcf;
@@ -53,9 +53,25 @@
 {{- end }}
 
 {{ define `create` }}
-  {{- range .Secret -}}
-    <p>Shard: {{ . }}</p>
-  {{- end -}}
+  <h1 class="title">{{ .Title }}</h1>
+  <p>{{ .Description }}</p>
+  <table class="table">
+    {{- range .Secret -}}
+      <tr>
+        {{- range . -}}
+          <td><nobr>
+              {{- .Index -}}
+              {{- range .Words -}}
+                &nbsp;{{ . -}}
+              {{- end -}}
+           </nobr></td>
+        {{- end -}}
+      </tr>
+    {{- end -}}
+  </table>
+  <form>
+    <a href="" class="button">Back</a>
+  </form>
 {{ end }}
 
 {{ define `update` }}
@@ -67,7 +83,17 @@
 {{ end }}
 
 {{ define `list` }}
+  <h1 class="title">{{ .Title }}</h1>
+  <p>{{ .Description }}</p>
   {{- range .PaperKeys -}}
     <h2>{{ .ID }}</h2>
   {{- end -}}
+  <h2 class="title">{{ .CreateKeyTitle }}</h2>
+  <form method="post" action="" class="form">
+    < class="field">
+      <label for="name" class="label">Name:</label>
+      <input name="name" class="input" value="" />
+      <input type="submit" name="Create" class="button" />
+    </div>
+  </form>
 {{ end }}

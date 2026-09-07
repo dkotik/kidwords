@@ -17,14 +17,15 @@ type FormCreateKey struct {
 	lc           *i18n.Localizer
 	Locale       string
 	User         User
-	Secret       kidwords.Secret
+	Secret       kidwords.Table
 	KeyName      string
 	KeyNameLabel string
 	KeyNameError string
+	Quorum       int
 }
 
-func (f *FormCreateKey) Title() (string, error) {
-	return f.lc.Localize(&i18n.LocalizeConfig{
+func newFormCreateKeyTitle(lc *i18n.Localizer) (string, error) {
+	return lc.Localize(&i18n.LocalizeConfig{
 		DefaultMessage: &i18n.Message{
 			ID:    "KidwordsCreateFormTitle",
 			Other: "Create New Paper Key",
@@ -32,8 +33,26 @@ func (f *FormCreateKey) Title() (string, error) {
 	})
 }
 
+func (f *FormCreateKey) Title() (string, error) {
+	return newFormCreateKeyTitle(f.lc)
+}
+
+func (f *FormCreateKey) Description() (string, error) {
+	return f.lc.Localize(&i18n.LocalizeConfig{
+		DefaultMessage: &i18n.Message{
+			ID:    "KidwordsCreateFormDescription",
+			Other: "Print and store this key in a safe place. The key is split into validatable shards. You will need at least {{ .Quorum }} valid shards to gain access to your account.",
+		},
+		TemplateData: map[string]any{
+			"Quorum": f.Quorum,
+		},
+	})
+}
+
 func (s *Service) newFormCreateKey(ctx context.Context) (f *FormCreateKey, err error) {
-	f = &FormCreateKey{}
+	f = &FormCreateKey{
+		Quorum: s.quorumCount,
+	}
 	f.User, f.lc, err = s.unpackContext(ctx)
 	if err != nil {
 		return nil, err
@@ -111,7 +130,7 @@ func (s *Service) CreateKeyFormPost(ctx context.Context, name string) (_ *FormCr
 		return form, err
 	}
 
-	form.Secret, err = kidwords.NewSecret(
+	secret, err := kidwords.NewSecret(
 		secretBytes,
 		s.shardCount,
 		s.quorumCount,
@@ -119,6 +138,7 @@ func (s *Service) CreateKeyFormPost(ctx context.Context, name string) (_ *FormCr
 	if err != nil {
 		return form, err
 	}
+	form.Secret = s.encoder.MakeTable(secret)
 
 	return form, nil
 }
