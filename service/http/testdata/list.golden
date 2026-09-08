@@ -1,10 +1,11 @@
+<!DOCTYPE html>
 <html lang="en">
   <head>
     <title>My Paper Keys</title>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width,initial-scale=1" />
     <script src="htmx.min.js"></script>
-    <style href="bulma.min.css" />
+    <link rel="stylesheet" href="bulma.min.css">
     <style>
       :root {
         --base: #cfcfcf;
@@ -20,6 +21,7 @@
 
       html {
         color-scheme: dark light;
+        overscroll-behavior: none;
       }
 
       :root:has(#theme [value="light"]:checked) {
@@ -36,7 +38,14 @@
 
       body {
         color: var(--text);
-        background-color: var(--base);
+         
+        overscroll-behavior: none;
+      }
+
+      body > main {
+        padding: 1em 2.5em;
+        max-width: 36em;
+        margin: 0 auto;
       }
 
       body {
@@ -45,17 +54,58 @@
       }
     </style>
   </head>
-  <body>
-    
+  <body><main>
   <h1 class="title">My Paper Keys</h1>
-  <p>Paper keys are the best account recovery mechanism. Create a key. Print the key and store it in a safe place. If you lose access to your account in the future, you can sign in using any paper key.</p><h2>50dfde58-6955-7e4e-c38d-59ee96f4fdbe</h2><h2>6c61681e-6ae1-8c71-180d-e4913bf7f419</h2><h2 class="title">Create New Paper Key</h2>
-  <form method="post" action="" class="form">
-    &lt; class="field">
-      <label for="name" class="label">Name:</label>
-      <input name="name" class="input" value="" />
-      <input type="submit" name="Create" class="button" />
+  <p>Paper keys are the best account recovery mechanism. Create a key. Print the key and store it in a safe place. If you lose access to your account in the future, you can sign in using any paper key.</p><article class="message my-5">
+          <div class="message-header">
+            <p>test-key:updated
+              (NGNjYjM5ODMtOTRlZC1lMDU3LWQ0MGItMWVkNzY5OGM0ZDEx)
+            </p>
+            <form method="DELETE" action="">
+              <div class="field">
+                <input type="hidden" name="id" value="4ccb3983-94ed-e057-d40b-1ed7698c4d11" />
+                <button class="delete" aria-label="delete" type="submit"></button>
+              </div>
+            </form>
+          </div>
+          <div class="message-body">
+            Lorem ipsum dolor sit amet, consectetur adipiscing elit.
+            <strong>Pellentesque risus mi</strong>, tempus quis placerat ut, porta nec
+            nulla. Vestibulum rhoncus ac ex sit amet fringilla. Nullam gravida purus
+            diam, et dictum <a>felis venenatis</a> efficitur. Aenean ac
+            <em>eleifend lacus</em>, in mollis lectus. Donec sodales, arcu et
+            sollicitudin porttitor, tortor urna tempor ligula, id porttitor mi magna a
+            neque. Donec dui urna, vehicula et sem eget, facilisis sodales sem.
+            TIME
+            TIME
+          </div>
+        </article><article class="message my-5">
+          <div class="message-header">
+            <p>
+              (no fingerprint)
+            </p>
+            <form method="DELETE" action="">
+              <div class="field">
+                <input type="hidden" name="id" value="" />
+                <button class="delete" aria-label="delete" type="submit"></button>
+              </div>
+            </form>
+          </div>
+          <div class="message-body">
+            Lorem ipsum dolor sit amet, consectetur adipiscing elit.
+            <strong>Pellentesque risus mi</strong>, tempus quis placerat ut, porta nec
+            nulla. Vestibulum rhoncus ac ex sit amet fringilla. Nullam gravida purus
+            diam, et dictum <a>felis venenatis</a> efficitur. Aenean ac
+            <em>eleifend lacus</em>, in mollis lectus. Donec sodales, arcu et
+            sollicitudin porttitor, tortor urna tempor ligula, id porttitor mi magna a
+            neque. Donec dui urna, vehicula et sem eget, facilisis sodales sem.
+            TIME
+            TIME
+          </div>
+        </article><form method="POST" action="" class="form mt-4">
+    <div class="field has-text-centered">
+      <input type="submit" name="create" class="button is-success" value="Create New Paper Key"/>
     </div>
   </form>
-
-  </body>
+</main></body>
 </html>

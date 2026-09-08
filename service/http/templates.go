@@ -9,6 +9,10 @@ import (
 //go:embed media/*
 var assets embed.FS
 
+// var TemplateFuncs = map[string]any{
+// 	"base64": base64.RawStdEncoding.EncodeToString,
+// }
+
 type Templates struct {
 	Page   *template.Template
 	List   *template.Template
@@ -25,12 +29,12 @@ func (t Templates) isComplete() bool {
 		t.Delete != nil
 }
 
-func LoadDefaultTemplates() (*template.Template, error) {
+func LoadDefaultTemplatesInto(tmpl *template.Template) (*template.Template, error) {
 	data, err := assets.ReadFile("media/templates.html")
 	if err != nil {
 		return nil, fmt.Errorf("unable to load templates: %w", err)
 	}
-	tmpl, err := template.New("").Parse(string(data))
+	tmpl, err = tmpl.Parse(string(data))
 	if err != nil {
 		return nil, fmt.Errorf("unable to parse templates: %w", err)
 	}

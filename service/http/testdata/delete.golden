@@ -5,7 +5,7 @@
     <form action="" method="DELETE" class="form">
       <fieldset>
         <div class="field">
-          <input type="hidden" name="id" value="50dfde58-6955-7e4e-c38d-59ee96f4fdbe" />
+          <input type="hidden" name="id" value="4ccb3983-94ed-e057-d40b-1ed7698c4d11" />
           <input class="button is-primary" type="submit" value="Delete" />
         </div>
       </fieldset>

@@ -5,9 +5,7 @@ import (
 	"crypto/rand"
 	"encoding/base64"
 	"fmt"
-	"strings"
 	"time"
-	"uuid"
 
 	"github.com/dkotik/kidwords"
 	"github.com/dkotik/kidwords/service/secret"
@@ -20,18 +18,13 @@ var createButtonLabel = &i18n.Message{
 }
 
 type FormCreateKey struct {
-	lc           *i18n.Localizer
-	Locale       string
-	User         User
-	Secret       kidwords.Table
-	KeyName      string
-	KeyNameLabel string
-	KeyNameError string
-	Quorum       int
-}
-
-func (f *FormCreateKey) Title() (string, error) {
-	return f.lc.LocalizeMessage(createButtonLabel)
+	lc     *i18n.Localizer
+	Title  string
+	Locale string
+	User   User
+	Secret kidwords.Table
+	Error  string
+	Quorum int
 }
 
 func (f *FormCreateKey) Description() (string, error) {
@@ -54,13 +47,10 @@ func (s *Service) newFormCreateKey(ctx context.Context) (f *FormCreateKey, err e
 	if err != nil {
 		return nil, err
 	}
-	knl, tag, err := f.lc.LocalizeWithTag(&i18n.LocalizeConfig{
-		DefaultMessage: &i18n.Message{
-			ID:    "KidwordsKeyNameLabel",
-			Other: "key name",
-		},
+	title, tag, err := f.lc.LocalizeWithTag(&i18n.LocalizeConfig{
+		DefaultMessage: createButtonLabel,
 	})
-	f.KeyNameLabel = knl
+	f.Title = title
 	f.Locale = tag.String()
 	return f, nil
 }
@@ -78,18 +68,10 @@ func (s *Service) CreateKeyFormPost(ctx context.Context, name string) (_ *FormCr
 	if err != nil {
 		return nil, err
 	}
-	form.KeyName = strings.TrimSpace(name)
-	if form.KeyName == "" {
-		form.KeyNameError, err = form.lc.LocalizeMessage(&i18n.Message{
-			ID:    "KidwordsErrorKeyNameRequired",
-			Other: "key name is empty",
-		})
-		return form, err
-	}
 
 	secretBytes := make([]byte, s.keyLength)
 	if _, err = rand.Read(secretBytes); err != nil {
-		form.KeyNameError = err.Error()
+		form.Error = err.Error()
 		return form, err
 	}
 	argonHash, err := secret.NewArgonHash(secretBytes)
@@ -108,7 +90,7 @@ func (s *Service) CreateKeyFormPost(ctx context.Context, name string) (_ *FormCr
 		return form, err
 	}
 	if len(keys) >= s.keyCountLimit {
-		form.KeyNameError, err = form.lc.LocalizeMessage(&i18n.Message{
+		form.Error, err = form.lc.LocalizeMessage(&i18n.Message{
 			ID:    "KidwordsErrorTooManyKeys",
 			Other: "too many paper keys, please delete one",
 		})
@@ -123,23 +105,25 @@ func (s *Service) CreateKeyFormPost(ctx context.Context, name string) (_ *FormCr
 	if err != nil {
 		return form, err
 	}
-	if form.KeyName == "" {
-		form.KeyName = base64.RawStdEncoding.EncodeToString(kidwordsSecret.GetFingerprint())
+	id, err := s.identifierGenerator.GenerateIdentifier()
+	if err != nil {
+		return form, err
 	}
+	fingerPrint := kidwordsSecret.GetFingerprint()
 	_, err = rp.Create(ctx, secret.Secret{
-		ID:         uuid.New().String(),
-		UserID:     userID,
-		Name:       form.KeyName,
-		Type:       secret.TypePaperKey,
-		SaltedHash: argonHash.String(),
-		CreatedAt:  time.Now(),
-		UpdatedAt:  time.Now(),
+		ID:          id,
+		UserID:      userID,
+		Name:        base64.RawStdEncoding.EncodeToString(kidwordsSecret.GetFingerprint()),
+		Fingerprint: fingerPrint,
+		Type:        secret.TypePaperKey,
+		SaltedHash:  argonHash.String(),
+		CreatedAt:   time.Now(),
+		UpdatedAt:   time.Now(),
 	})
 	if err != nil {
 		return form, err
 	}
 
 	form.Secret = s.encoder.MakeTable(kidwordsSecret)
-
 	return form, nil
 }

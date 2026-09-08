@@ -1,11 +1,12 @@
 {{ define `page` -}}
+<!DOCTYPE html>
 <html lang="{{ .Locale }}">
   <head>
     <title>{{ .Title }}</title>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width,initial-scale=1" />
     <script src="htmx.min.js"></script>
-    <style href="bulma.min.css" />
+    <link rel="stylesheet" href="bulma.min.css">
     <style>
       :root {
         --base: #cfcfcf;
@@ -21,6 +22,7 @@
 
       html {
         color-scheme: dark light;
+        overscroll-behavior: none;
       }
 
       :root:has(#theme [value="light"]:checked) {
@@ -37,7 +39,14 @@
 
       body {
         color: var(--text);
-        background-color: var(--base);
+        /*background-color: var(--base);*/
+        overscroll-behavior: none;
+      }
+
+      body > main {
+        padding: 1em 2.5em;
+        max-width: 36em;
+        margin: 0 auto;
       }
 
       body {
@@ -46,9 +55,9 @@
       }
     </style>
   </head>
-  <body>
-    {{ template `content` . }}
-  </body>
+  <body><main>
+    {{- template `content` . -}}
+  </main></body>
 </html>
 {{- end }}
 
@@ -108,15 +117,36 @@
 {{ define `list` }}
   <h1 class="title">{{ .Title }}</h1>
   <p>{{ .Description }}</p>
-  {{- range .PaperKeys -}}
-    <h2>{{ .ID }}</h2>
-  {{- end -}}
-  <h2 class="title">{{ .CreateKeyTitle }}</h2>
-  <form method="post" action="" class="form">
-    < class="field">
-      <label for="name" class="label">Name:</label>
-      <input name="name" class="input" value="" />
-      <input type="submit" name="Create" class="button" />
+    {{- range .PaperKeys -}}
+        <article class="message my-5">
+          <div class="message-header">
+            <p>
+              {{- .Name }}
+              ({{- or .Fingerprint "no fingerprint" -}})
+            </p>
+            <form method="DELETE" action="">
+              <div class="field">
+                <input type="hidden" name="id" value="{{ .ID }}" />
+                <button class="delete" aria-label="delete" type="submit"></button>
+              </div>
+            </form>
+          </div>
+          <div class="message-body">
+            Lorem ipsum dolor sit amet, consectetur adipiscing elit.
+            <strong>Pellentesque risus mi</strong>, tempus quis placerat ut, porta nec
+            nulla. Vestibulum rhoncus ac ex sit amet fringilla. Nullam gravida purus
+            diam, et dictum <a>felis venenatis</a> efficitur. Aenean ac
+            <em>eleifend lacus</em>, in mollis lectus. Donec sodales, arcu et
+            sollicitudin porttitor, tortor urna tempor ligula, id porttitor mi magna a
+            neque. Donec dui urna, vehicula et sem eget, facilisis sodales sem.
+            <time datetime="{{ .CreatedAtFull }}">{{- .CreatedAt -}}</time>
+            <time datetime="{{ .LastAcceptedAtFull }}">{{- .LastAcceptedAt -}}</time>
+          </div>
+        </article>
+    {{- end -}}
+  <form method="POST" action="" class="form mt-4">
+    <div class="field has-text-centered">
+      <input type="submit" name="create" class="button is-success" value="{{ .CreateKeyTitle }}"/>
     </div>
   </form>
 {{ end }}

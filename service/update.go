@@ -12,8 +12,10 @@ import (
 
 type FormUpdateKey struct {
 	*FormCreateKey
+	KeyName      string
+	KeyNameLabel string
+	KeyNameError string
 	keyView
-	Error string
 }
 
 func (f *FormUpdateKey) Title() (string, error) {

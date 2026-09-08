@@ -3,6 +3,7 @@ package http
 import (
 	"errors"
 	"fmt"
+	"html/template"
 	"net/http"
 
 	"github.com/dkotik/htadaptor"
@@ -94,7 +95,7 @@ func withDefaultTemplates(o *options) error {
 	} else if o.Templates.isComplete() {
 		return nil // all good
 	}
-	templates, err := LoadDefaultTemplates()
+	templates, err := LoadDefaultTemplatesInto(template.New(""))
 	if err != nil {
 		return err
 	}

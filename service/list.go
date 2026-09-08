@@ -2,6 +2,7 @@ package service
 
 import (
 	"context"
+	"encoding/base64"
 	"time"
 
 	"github.com/dkotik/kidwords/service/secret"
@@ -10,14 +11,17 @@ import (
 )
 
 type keyView struct {
-	ID             string
-	UserID         string
-	Name           string
-	Type           string
-	Fingerprint    []byte
-	CreatedAt      time.Time
-	UpdatedAt      time.Time
-	LastAcceptedAt time.Time
+	ID                 string
+	UserID             string
+	Name               string
+	Type               string
+	Fingerprint        string
+	CreatedAt          string
+	UpdatedAt          string
+	LastAcceptedAt     string
+	CreatedAtFull      string
+	UpdatedAtFull      string
+	LastAcceptedAtFull string
 }
 
 type keyListView struct {
@@ -28,17 +32,21 @@ type keyListView struct {
 	PaperKeys []keyView
 }
 
-func newKeyView(s secret.Secret) keyView {
-	return keyView{
-		ID:             s.ID,
-		UserID:         s.UserID,
-		Name:           s.Name,
-		Type:           s.Type,
-		Fingerprint:    s.Fingerprint,
-		CreatedAt:      s.CreatedAt,
-		UpdatedAt:      s.UpdatedAt,
-		LastAcceptedAt: s.LastAcceptedAt,
+func newKeyView(s secret.Secret) (v keyView) {
+	v.ID = s.ID
+	v.UserID = s.UserID
+	v.Name = s.Name
+	v.Type = s.Type
+	v.Fingerprint = base64.RawStdEncoding.EncodeToString(s.Fingerprint)
+	v.CreatedAt = s.CreatedAt.Format(time.RFC3339)
+	v.CreatedAtFull = s.CreatedAt.Format(time.RFC3339)
+	v.UpdatedAt = s.UpdatedAt.Format(time.RFC3339)
+	v.UpdatedAtFull = s.UpdatedAt.Format(time.RFC3339)
+	if !s.LastAcceptedAt.IsZero() {
+		v.LastAcceptedAt = s.LastAcceptedAt.Format(time.RFC3339)
 	}
+	v.LastAcceptedAtFull = s.LastAcceptedAt.Format(time.RFC3339)
+	return v
 }
 
 func (v keyListView) Description() (string, error) {

@@ -26,7 +26,10 @@ func New() secret.Repository {
 func (m *mock) Create(_ context.Context, s secret.Secret) (string, error) {
 	m.mu.Lock()
 	defer m.mu.Unlock()
-	s.ID = newUUID(s.Name + s.Type).String()
+	// s.Name = fmt.Sprintf("%d", len(m.userSecrets)+1)
+	// s.ID = newUUID(s.Name + s.Type).String()
+	// s.Name = s.ID
+	// s.Fingerprint = []byte(s.ID)
 	// if s.ID == "" {
 	// s.ID = uuid.New().String()
 	// }
