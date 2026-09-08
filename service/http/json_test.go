@@ -1,7 +1,6 @@
 package http
 
 import (
-	"fmt"
 	"net/http"
 	"net/url"
 	"strings"
@@ -150,14 +149,18 @@ func TestHandlersJSON(t *testing.T) {
 	})
 
 	t.Run("deletePaperKey", func(t *testing.T) {
+		form := url.Values{}
+		form.Set("id", testKeyID)
+		form.Set("confirmation", "true")
 		req, err := http.NewRequest(
 			"DELETE",
-			fmt.Sprintf("%s?delete=%s", prefix, testKeyID),
-			nil,
+			prefix,
+			strings.NewReader(form.Encode()),
 		)
 		if err != nil {
 			t.Fatal(err)
 		}
+		req.Header.Set("Content-Type", "application/x-www-form-urlencoded")
 		data, sc, err := server(req)
 		if err != nil {
 			t.Fatal(err)

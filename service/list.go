@@ -2,18 +2,43 @@ package service
 
 import (
 	"context"
+	"time"
 
 	"github.com/dkotik/kidwords/service/secret"
 	"github.com/nicksnyder/go-i18n/v2/i18n"
 	"golang.org/x/text/language"
 )
 
+type keyView struct {
+	ID             string
+	UserID         string
+	Name           string
+	Type           string
+	Fingerprint    []byte
+	CreatedAt      time.Time
+	UpdatedAt      time.Time
+	LastAcceptedAt time.Time
+}
+
 type keyListView struct {
 	lc        *i18n.Localizer
 	Locale    string
 	User      User
 	Title     string
-	PaperKeys []secret.Secret
+	PaperKeys []keyView
+}
+
+func newKeyView(s secret.Secret) keyView {
+	return keyView{
+		ID:             s.ID,
+		UserID:         s.UserID,
+		Name:           s.Name,
+		Type:           s.Type,
+		Fingerprint:    s.Fingerprint,
+		CreatedAt:      s.CreatedAt,
+		UpdatedAt:      s.UpdatedAt,
+		LastAcceptedAt: s.LastAcceptedAt,
+	}
 }
 
 func (v keyListView) Description() (string, error) {
@@ -26,7 +51,13 @@ func (v keyListView) Description() (string, error) {
 }
 
 func (v keyListView) CreateKeyTitle() (string, error) {
-	return newFormCreateKeyTitle(v.lc)
+	return v.lc.LocalizeMessage(createButtonLabel)
+}
+
+func (f keyListView) DeleteButtonLabel() (string, error) {
+	return f.lc.Localize(&i18n.LocalizeConfig{
+		DefaultMessage: deleteButtonLabel,
+	})
 }
 
 func (s *Service) List(ctx context.Context) (view keyListView, err error) {
@@ -46,15 +77,13 @@ func (s *Service) List(ctx context.Context) (view keyListView, err error) {
 	}
 	view.Locale = tag.String()
 
-	view.PaperKeys, err = s.repository.List(ctx, view.User.GetID())
+	secrets, err := s.repository.List(ctx, view.User.GetID())
 	if err != nil {
 		return view, err
 	}
-	// for _, key := range view.PaperKeys {
-	// 	if key.UserID == "" {
-	// 		return view, errors.New("empty userID")
-	// 	}
-	// }
-
+	view.PaperKeys = make([]keyView, len(secrets))
+	for i, s := range secrets {
+		view.PaperKeys[i] = newKeyView(s)
+	}
 	return view, nil
 }

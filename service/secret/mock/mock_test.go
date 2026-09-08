@@ -7,5 +7,5 @@ import (
 )
 
 func TestRepositoryInterfaceContract(t *testing.T) {
-	secret.NewSecretsRepositoryTest(New())(t)
+	secret.NewRepositoryTest(New())(t)
 }

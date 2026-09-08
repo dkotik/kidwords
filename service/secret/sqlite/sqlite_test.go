@@ -23,5 +23,5 @@ func TestRepositoryInterfaceContract(t *testing.T) {
 	if err != nil {
 		t.Fatal(err)
 	}
-	secret.NewSecretsRepositoryTest(rp)(t)
+	secret.NewRepositoryTest(rp)(t)
 }

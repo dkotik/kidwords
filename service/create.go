@@ -3,6 +3,7 @@ package service
 import (
 	"context"
 	"crypto/rand"
+	"encoding/base64"
 	"fmt"
 	"strings"
 	"time"
@@ -12,6 +13,11 @@ import (
 	"github.com/dkotik/kidwords/service/secret"
 	"github.com/nicksnyder/go-i18n/v2/i18n"
 )
+
+var createButtonLabel = &i18n.Message{
+	ID:    "KidwordsCreateFormTitle",
+	Other: "Create New Paper Key",
+}
 
 type FormCreateKey struct {
 	lc           *i18n.Localizer
@@ -24,17 +30,8 @@ type FormCreateKey struct {
 	Quorum       int
 }
 
-func newFormCreateKeyTitle(lc *i18n.Localizer) (string, error) {
-	return lc.Localize(&i18n.LocalizeConfig{
-		DefaultMessage: &i18n.Message{
-			ID:    "KidwordsCreateFormTitle",
-			Other: "Create New Paper Key",
-		},
-	})
-}
-
 func (f *FormCreateKey) Title() (string, error) {
-	return newFormCreateKeyTitle(f.lc)
+	return f.lc.LocalizeMessage(createButtonLabel)
 }
 
 func (f *FormCreateKey) Description() (string, error) {
@@ -117,6 +114,18 @@ func (s *Service) CreateKeyFormPost(ctx context.Context, name string) (_ *FormCr
 		})
 		return form, err
 	}
+
+	kidwordsSecret, err := kidwords.NewSecret(
+		secretBytes,
+		s.shardCount,
+		s.quorumCount,
+	)
+	if err != nil {
+		return form, err
+	}
+	if form.KeyName == "" {
+		form.KeyName = base64.RawStdEncoding.EncodeToString(kidwordsSecret.GetFingerprint())
+	}
 	_, err = rp.Create(ctx, secret.Secret{
 		ID:         uuid.New().String(),
 		UserID:     userID,
@@ -130,15 +139,7 @@ func (s *Service) CreateKeyFormPost(ctx context.Context, name string) (_ *FormCr
 		return form, err
 	}
 
-	secret, err := kidwords.NewSecret(
-		secretBytes,
-		s.shardCount,
-		s.quorumCount,
-	)
-	if err != nil {
-		return form, err
-	}
-	form.Secret = s.encoder.MakeTable(secret)
+	form.Secret = s.encoder.MakeTable(kidwordsSecret)
 
 	return form, nil
 }

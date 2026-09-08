@@ -69,17 +69,40 @@
       </tr>
     {{- end -}}
   </table>
-  <form>
-    <a href="" class="button">Back</a>
-  </form>
+  <a href="" class="button">Back</a>
 {{ end }}
 
 {{ define `update` }}
-  UPDATE FORM
+<h1 class="title">{{ .Title }}</h1>
+<p>{{ .Description }}</p>
+<form action="" method="PUT" class="form">
+  <fieldset>
+    <div class="field">
+      <input type="hidden" name="id" value="{{ .ID }}" />
+      <label class="label" for="name">{{ .NameFieldLabel }} *</label>
+      <input class="input" name="name" value="{{ .Name }}" placeholder="..." required />
+    </div>
+    <input class="button is-primary" type="submit" value="{{ .UpdateButtonLabel }}" />
+    <a href="" class="button">Cancel</a>
+  </fieldset>
+</form>
 {{ end }}
 
 {{ define `delete` }}
-  delete FORM
+  {{ if .ID }}
+    <h1 class="title">{{ .Title }}</h1>
+    <p>{{ .Description }}</p>
+    <form action="" method="DELETE" class="form">
+      <fieldset>
+        <div class="field">
+          <input type="hidden" name="id" value="{{ .ID }}" />
+          <input class="button is-primary" type="submit" value="{{ .DeleteButtonLabel }}" />
+        </div>
+      </fieldset>
+    </form>
+  {{ else }}
+
+  {{ end }}
 {{ end }}
 
 {{ define `list` }}

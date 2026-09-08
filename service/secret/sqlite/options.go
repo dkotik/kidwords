@@ -30,7 +30,8 @@ func (o *options) getInstallScript() string {
     CREATE TABLE IF NOT EXISTS %s (
       %s,
       FOREIGN KEY (user_id) REFERENCES %s(%s),
-      UNIQUE (user_id, fingerprint)
+      UNIQUE (user_id, name),
+      UNIQUE (user_id, fingerprint),
     );`,
 		escapeIdentifier(o.TableName),
 		SecretsTableFields,

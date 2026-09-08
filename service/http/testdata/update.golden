@@ -1,0 +1,14 @@
+
+<h1 class="title">Change Paper Key Name</h1>
+<p>Change the name of this paper key. Be careful not to betray the exact physical location where it might be stored or which persons might have access to it or knowledge of it.</p>
+<form action="" method="PUT" class="form">
+  <fieldset>
+    <div class="field">
+      <input type="hidden" name="id" value="50dfde58-6955-7e4e-c38d-59ee96f4fdbe" />
+      <label class="label" for="name">Name *</label>
+      <input class="input" name="name" value="test-key" placeholder="..." required />
+    </div>
+    <input class="button is-primary" type="submit" value="Update" />
+    <a href="" class="button">Cancel</a>
+  </fieldset>
+</form>

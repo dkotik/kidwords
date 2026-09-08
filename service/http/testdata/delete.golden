@@ -1,0 +1,13 @@
+
+  
+    <h1 class="title">Delete Paper Key</h1>
+    <p>Are you certain that you would like to remove this paper key from your account? You will not be able to restore access to your account using this key anymore. Service administration might keep a copy of the key for some time as proof of account ownership, by service policy, in case your account has been hacked and access to it must be restored.</p>
+    <form action="" method="DELETE" class="form">
+      <fieldset>
+        <div class="field">
+          <input type="hidden" name="id" value="50dfde58-6955-7e4e-c38d-59ee96f4fdbe" />
+          <input class="button is-primary" type="submit" value="Delete" />
+        </div>
+      </fieldset>
+    </form>
+  

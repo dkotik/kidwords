@@ -12,34 +12,63 @@ import (
 
 type FormUpdateKey struct {
 	*FormCreateKey
-	UUID string
+	keyView
+	Error string
 }
 
 func (f *FormUpdateKey) Title() (string, error) {
 	return f.lc.Localize(&i18n.LocalizeConfig{
 		DefaultMessage: &i18n.Message{
 			ID:    "KidwordsUpdateFormTitle",
-			Other: "Update Paper Key",
+			Other: "Change Paper Key Name",
 		},
 	})
 }
 
-func (s *Service) updateKeyFormView(ctx context.Context, UUID string) (any, error) {
-	secret, err := s.repository.Retrieve(ctx, UUID)
+func (f *FormUpdateKey) Description() (string, error) {
+	return f.lc.Localize(&i18n.LocalizeConfig{
+		DefaultMessage: &i18n.Message{
+			ID:    "KidwordsUpdateFormDescription",
+			Other: "Change the name of this paper key. Be careful not to betray the exact physical location where it might be stored or which persons might have access to it or knowledge of it.",
+		},
+	})
+}
+
+func (f *FormUpdateKey) NameFieldLabel() (string, error) {
+	return f.lc.Localize(&i18n.LocalizeConfig{
+		DefaultMessage: &i18n.Message{
+			ID:    "KidwordsNameFieldLabel",
+			Other: "Name",
+		},
+	})
+}
+
+func (f *FormUpdateKey) UpdateButtonLabel() (string, error) {
+	return f.lc.Localize(&i18n.LocalizeConfig{
+		DefaultMessage: &i18n.Message{
+			ID:    "KidwordsUpdateButtonLabel",
+			Other: "Update",
+		},
+	})
+}
+
+func (s *Service) updateKeyFormView(ctx context.Context, ID string) (form *FormUpdateKey, err error) {
+	form = &FormUpdateKey{}
+	form.FormCreateKey, err = s.newFormCreateKey(ctx)
 	if err != nil {
 		return nil, err
 	}
-	f, err := s.newFormCreateKey(ctx)
+	secret, err := s.repository.Retrieve(ctx, ID)
 	if err != nil {
-		return nil, err
+		form.Error = err.Error()
+		return
 	}
-	if secret.UserID != f.User.GetID() {
-		return nil, newNotFoundError(f.lc)
+	form.keyView = newKeyView(secret)
+	if secret.UserID != form.FormCreateKey.User.GetID() {
+		form.Error = newNotFoundError(form.lc).Error()
+		return
 	}
-	return &FormUpdateKey{
-		FormCreateKey: f,
-		UUID:          UUID,
-	}, nil
+	return
 }
 
 type UpdateKeyRequest struct {
@@ -51,6 +80,7 @@ func (r *UpdateKeyRequest) Validate(context.Context) error {
 	if r.ID == "" {
 		return errors.New("UUID is required")
 	}
+	r.Name = strings.TrimSpace(r.Name)
 	if r.Name == "" {
 		return errors.New("Name is required")
 	}
@@ -76,6 +106,7 @@ func (s *Service) UpdateKeyFormPost(ctx context.Context, req *UpdateKeyRequest) 
 	if key.UserID != form.User.GetID() {
 		return nil, newNotFoundError(form.lc)
 	}
+	form.keyView = newKeyView(key)
 	form.KeyName = strings.TrimSpace(req.Name)
 	if form.KeyName == "" {
 		form.KeyNameError, err = form.lc.LocalizeMessage(&i18n.Message{

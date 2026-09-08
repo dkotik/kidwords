@@ -52,13 +52,8 @@ func NewJSON(s *service.Service, withOptions ...Option) (_ http.Handler, err err
 		return nil, fmt.Errorf("unable to create an update key form handler: %w", err)
 	}
 
-	idExtractor, err := extract.NewQueryValueExtractor("delete")
-	if err != nil {
-		return nil, err
-	}
-	delete, err := o.Adaptor.AdaptStringFunc(
+	delete, err := o.Adaptor.AdaptFunc(
 		s.Delete,
-		idExtractor,
 	)
 	if err != nil {
 		return nil, fmt.Errorf("unable to create a delete key form handler: %w", err)

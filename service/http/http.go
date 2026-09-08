@@ -46,13 +46,8 @@ func New(s *service.Service, withOptions ...Option) (_ http.Handler, err error) 
 		return nil, fmt.Errorf("unable to create an update key form handler: %w", err)
 	}
 
-	idExtractor, err := extract.NewQueryValueExtractor("delete")
-	if err != nil {
-		return nil, err
-	}
-	delete, err := o.Adaptor.AdaptStringFunc(
+	delete, err := o.Adaptor.AdaptFunc(
 		s.Delete,
-		idExtractor,
 		htadaptor.WithTemplate(o.Templates.Delete),
 	)
 	if err != nil {

@@ -9,7 +9,7 @@ import (
 	"time"
 )
 
-func NewSecretsRepositoryTest(r Repository) func(*testing.T) {
+func NewRepositoryTest(r Repository) func(*testing.T) {
 	return func(t *testing.T) {
 		if r == nil {
 			t.Fatal("nil repository")
