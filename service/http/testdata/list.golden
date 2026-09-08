@@ -59,11 +59,11 @@
   <p>Paper keys are the best account recovery mechanism. Create a key. Print the key and store it in a safe place. If you lose access to your account in the future, you can sign in using any paper key.</p><article class="message my-5">
           <div class="message-header">
             <p>test-key:updated
-              (NGNjYjM5ODMtOTRlZC1lMDU3LWQ0MGItMWVkNzY5OGM0ZDEx)
+              (Y2ZjZDIwODQtOTVkNS02NWVmLTY2ZTctZGZmOWY5ODc2NGRh)
             </p>
             <form method="DELETE" action="">
               <div class="field">
-                <input type="hidden" name="id" value="4ccb3983-94ed-e057-d40b-1ed7698c4d11" />
+                <input type="hidden" name="id" value="cfcd2084-95d5-65ef-66e7-dff9f98764da" />
                 <button class="delete" aria-label="delete" type="submit"></button>
               </div>
             </form>
@@ -81,12 +81,12 @@
           </div>
         </article><article class="message my-5">
           <div class="message-header">
-            <p>
-              (no fingerprint)
+            <p>another Secret
+              (YzRjYTQyMzgtYTBiOS0yMzgyLTBkY2MtNTA5YTZmNzU4NDli)
             </p>
             <form method="DELETE" action="">
               <div class="field">
-                <input type="hidden" name="id" value="" />
+                <input type="hidden" name="id" value="c4ca4238-a0b9-2382-0dcc-509a6f75849b" />
                 <button class="delete" aria-label="delete" type="submit"></button>
               </div>
             </form>

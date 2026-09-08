@@ -2,9 +2,7 @@ package http
 
 import (
 	"context"
-	"crypto/md5"
 	"errors"
-	"fmt"
 	"io"
 	"net/http"
 	"net/http/httptest"
@@ -12,7 +10,6 @@ import (
 	"regexp"
 	"strings"
 	"testing"
-	"uuid"
 
 	"github.com/dkotik/htadaptor"
 	"github.com/dkotik/kidwords/service"
@@ -42,18 +39,9 @@ func (m mockAuthenticator) Authenticate(context.Context) (service.User, error) {
 }
 
 func newTestService(r secret.Repository, withOptions ...Option) (http.Handler, error) {
-	uuidCount := 0
 	service, err := service.New(
 		mockAuthenticator{},
 		r,
-		service.WithIdentifierGenerator(service.IdentifierGeneratorFunc(
-			func() (string, error) {
-				uuidCount++
-				return uuid.UUID(
-					md5.Sum([]byte(fmt.Sprintf("mock-uuid-%d", uuidCount))),
-				).String(), nil
-			},
-		)),
 	)
 	if err != nil {
 		return nil, err

@@ -2,10 +2,12 @@ package mock
 
 import (
 	"context"
+	"fmt"
 	"slices"
 	"sync"
 	"uuid"
 
+	"github.com/dkotik/kidwords/internal"
 	"github.com/dkotik/kidwords/service/secret"
 )
 
@@ -26,10 +28,10 @@ func New() secret.Repository {
 func (m *mock) Create(_ context.Context, s secret.Secret) (string, error) {
 	m.mu.Lock()
 	defer m.mu.Unlock()
-	// s.Name = fmt.Sprintf("%d", len(m.userSecrets)+1)
-	// s.ID = newUUID(s.Name + s.Type).String()
+	s.ID = internal.NewDeterministicUUID(fmt.Sprintf("%d", len(m.userSecrets)))
+	// s.ID = s.Name + s.Type
 	// s.Name = s.ID
-	// s.Fingerprint = []byte(s.ID)
+	s.Fingerprint = []byte(s.ID)
 	// if s.ID == "" {
 	// s.ID = uuid.New().String()
 	// }

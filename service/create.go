@@ -3,7 +3,6 @@ package service
 import (
 	"context"
 	"crypto/rand"
-	"encoding/base64"
 	"fmt"
 	"time"
 
@@ -105,15 +104,11 @@ func (s *Service) CreateKeyFormPost(ctx context.Context, name string) (_ *FormCr
 	if err != nil {
 		return form, err
 	}
-	id, err := s.identifierGenerator.GenerateIdentifier()
-	if err != nil {
-		return form, err
-	}
 	fingerPrint := kidwordsSecret.GetFingerprint()
 	_, err = rp.Create(ctx, secret.Secret{
-		ID:          id,
-		UserID:      userID,
-		Name:        base64.RawStdEncoding.EncodeToString(kidwordsSecret.GetFingerprint()),
+		// ID:          id,
+		UserID: userID,
+		// Name:        base64.RawStdEncoding.EncodeToString(kidwordsSecret.GetFingerprint()),
 		Fingerprint: fingerPrint,
 		Type:        secret.TypePaperKey,
 		SaltedHash:  argonHash.String(),

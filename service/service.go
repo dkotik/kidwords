@@ -9,7 +9,6 @@ import (
 	"context"
 	"errors"
 	"fmt"
-	"uuid"
 
 	"github.com/dkotik/htadaptor"
 	"github.com/dkotik/kidwords"
@@ -32,16 +31,6 @@ type Localizer interface {
 	GetLocalizer(context.Context) *i18n.Localizer
 }
 
-type IdentifierGenerator interface {
-	GenerateIdentifier() (string, error)
-}
-
-type IdentifierGeneratorFunc func() (string, error)
-
-func (f IdentifierGeneratorFunc) GenerateIdentifier() (string, error) {
-	return f()
-}
-
 type LocalizerFunc func(context.Context) *i18n.Localizer
 
 func (f LocalizerFunc) GetLocalizer(ctx context.Context) *i18n.Localizer {
@@ -49,15 +38,14 @@ func (f LocalizerFunc) GetLocalizer(ctx context.Context) *i18n.Localizer {
 }
 
 type Service struct {
-	authenticator       Authenticator
-	repository          secret.Repository
-	localizer           Localizer
-	identifierGenerator IdentifierGenerator
-	keyCountLimit       int
-	keyLength           int
-	shardCount          int
-	quorumCount         int
-	encoder             kidwords.Encoder
+	authenticator Authenticator
+	repository    secret.Repository
+	localizer     Localizer
+	keyCountLimit int
+	keyLength     int
+	shardCount    int
+	quorumCount   int
+	encoder       kidwords.Encoder
 }
 
 func New(
@@ -77,11 +65,11 @@ func New(
 			return lc
 		})
 	}
-	if o.IdentifierGenerator == nil {
-		o.IdentifierGenerator = IdentifierGeneratorFunc(func() (string, error) {
-			return uuid.New().String(), nil
-		})
-	}
+	// if o.IdentifierGenerator == nil {
+	// 	o.IdentifierGenerator = IdentifierGeneratorFunc(func() (string, error) {
+	// 		return uuid.New().String(), nil
+	// 	})
+	// }
 	if o.KeyCountLimit == 0 {
 		o.KeyCountLimit = DefaultKeyCount
 	}
@@ -106,15 +94,14 @@ func New(
 	}
 
 	return &Service{
-		authenticator:       authenticator,
-		repository:          repository,
-		localizer:           o.Localizer,
-		identifierGenerator: o.IdentifierGenerator,
-		keyCountLimit:       int(o.KeyCountLimit),
-		keyLength:           int(o.KeyLength),
-		shardCount:          int(o.ShardCount),
-		quorumCount:         int(o.QuorumCount),
-		encoder:             o.Encoder,
+		authenticator: authenticator,
+		repository:    repository,
+		localizer:     o.Localizer,
+		keyCountLimit: int(o.KeyCountLimit),
+		keyLength:     int(o.KeyLength),
+		shardCount:    int(o.ShardCount),
+		quorumCount:   int(o.QuorumCount),
+		encoder:       o.Encoder,
 	}, nil
 }
 

@@ -4,9 +4,9 @@
 <form action="" method="PUT" class="form">
   <fieldset>
     <div class="field">
-      <input type="hidden" name="id" value="4ccb3983-94ed-e057-d40b-1ed7698c4d11" />
+      <input type="hidden" name="id" value="cfcd2084-95d5-65ef-66e7-dff9f98764da" />
       <label class="label" for="name">Name *</label>
-      <input class="input" name="name" value="4ccb3983-94ed-e057-d40b-1ed7698c4d11" placeholder="..." required />
+      <input class="input" name="name" value="" placeholder="..." required />
     </div>
     <input class="button is-primary" type="submit" value="Update" />
     <a href="" class="button">Cancel</a>
