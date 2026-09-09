@@ -151,7 +151,7 @@ func TestHandlersJSON(t *testing.T) {
 	t.Run("deletePaperKey", func(t *testing.T) {
 		form := url.Values{}
 		form.Set("id", testKeyID)
-		form.Set("confirmation", "true")
+		form.Set("confirm", "true")
 		req, err := http.NewRequest(
 			"DELETE",
 			prefix,

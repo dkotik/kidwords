@@ -9,6 +9,6 @@
       <input class="input" name="name" value="" placeholder="..." required />
     </div>
     <input class="button is-primary" type="submit" value="Update" />
-    <a href="" class="button">Cancel</a>
+    <a href="./" class="button">Cancel</a>
   </fieldset>
 </form>

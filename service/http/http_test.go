@@ -203,7 +203,7 @@ func TestHandlers(t *testing.T) {
 	t.Run("deletePaperKey", func(t *testing.T) {
 		form := url.Values{}
 		form.Set("id", testKeyID)
-		form.Set("confirmation", "true")
+		form.Set("confirm", "true")
 		req, err := http.NewRequest(
 			"POST",
 			prefix+"delete",
@@ -218,7 +218,7 @@ func TestHandlers(t *testing.T) {
 			t.Fatal(err)
 		}
 		if sc != http.StatusTemporaryRedirect {
-			t.Fatalf("expected status code %d, got %d", http.StatusOK, sc)
+			t.Fatalf("expected status code %d, got %d", http.StatusTemporaryRedirect, sc)
 		}
 		if len(data) == 0 {
 			// TODO: from Log to Fatal

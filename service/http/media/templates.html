@@ -78,7 +78,7 @@
       </tr>
     {{- end -}}
   </table>
-  <a href="" class="button">Back</a>
+  <a href="./" class="button">Back</a>
 {{ end }}
 
 {{ define `update` }}
@@ -92,25 +92,27 @@
       <input class="input" name="name" value="{{ .Name }}" placeholder="..." required />
     </div>
     <input class="button is-primary" type="submit" value="{{ .UpdateButtonLabel }}" />
-    <a href="" class="button">Cancel</a>
+    <a href="./" class="button">Cancel</a>
   </fieldset>
 </form>
 {{ end }}
 
 {{ define `delete` }}
-  {{ if .ID }}
+  {{ if .IsProcessed }}
+    Redirecting...
+  {{ else }}
     <h1 class="title">{{ .Title }}</h1>
     <p>{{ .Description }}</p>
-    <form action="" method="DELETE" class="form">
+    <form action="" method="post" class="form p-4">
       <fieldset>
-        <div class="field">
+        <div class="field has-text-centered">
           <input type="hidden" name="id" value="{{ .ID }}" />
-          <input class="button is-primary" type="submit" value="{{ .DeleteButtonLabel }}" />
+          <input type="hidden" name="confirm" value="true" />
+          <a href="./" class="button">Cancel</a>
+          <input class="button is-danger" type="submit" value="{{ .DeleteButtonLabel }}" />
         </div>
       </fieldset>
     </form>
-  {{ else }}
-
   {{ end }}
 {{ end }}
 
@@ -124,27 +126,15 @@
               {{- .Name }}
               ({{- or .Fingerprint "no fingerprint" -}})
             </p>
-            <form method="DELETE" action="">
-              <div class="field">
-                <input type="hidden" name="id" value="{{ .ID }}" />
-                <button class="delete" aria-label="delete" type="submit"></button>
-              </div>
-            </form>
+            <a class="delete" aria-label="delete" href="delete?id={{ .ID }}"></a>
           </div>
           <div class="message-body">
-            Lorem ipsum dolor sit amet, consectetur adipiscing elit.
-            <strong>Pellentesque risus mi</strong>, tempus quis placerat ut, porta nec
-            nulla. Vestibulum rhoncus ac ex sit amet fringilla. Nullam gravida purus
-            diam, et dictum <a>felis venenatis</a> efficitur. Aenean ac
-            <em>eleifend lacus</em>, in mollis lectus. Donec sodales, arcu et
-            sollicitudin porttitor, tortor urna tempor ligula, id porttitor mi magna a
-            neque. Donec dui urna, vehicula et sem eget, facilisis sodales sem.
             <time datetime="{{ .CreatedAtFull }}">{{- .CreatedAt -}}</time>
             <time datetime="{{ .LastAcceptedAtFull }}">{{- .LastAcceptedAt -}}</time>
           </div>
         </article>
     {{- end -}}
-  <form method="POST" action="" class="form mt-4">
+  <form method="post" action="create" class="form mt-4">
     <div class="field has-text-centered">
       <input type="submit" name="create" class="button is-success" value="{{ .CreateKeyTitle }}"/>
     </div>

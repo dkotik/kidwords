@@ -6,6 +6,7 @@ import (
 	"fmt"
 
 	"github.com/nicksnyder/go-i18n/v2/i18n"
+	"golang.org/x/text/language"
 )
 
 var deleteButtonLabel = &i18n.Message{
@@ -14,19 +15,13 @@ var deleteButtonLabel = &i18n.Message{
 }
 
 type FormDeleteKey struct {
-	lc   *i18n.Localizer
-	User User
+	lc     *i18n.Localizer
+	Locale string
+	Title  string
+	User   User
 	keyView
-	Error string
-}
-
-func (f *FormDeleteKey) Title() (string, error) {
-	return f.lc.Localize(&i18n.LocalizeConfig{
-		DefaultMessage: &i18n.Message{
-			ID:    "KidwordsDeleteFormTitle",
-			Other: "Delete Paper Key",
-		},
-	})
+	Error       string
+	IsProcessed bool
 }
 
 func (f *FormDeleteKey) Description() (string, error) {
@@ -43,8 +38,8 @@ func (f *FormDeleteKey) DeleteButtonLabel() (string, error) {
 }
 
 type DeleteRequest struct {
-	ID           string
-	Confirmation bool
+	ID      string
+	Confirm bool
 }
 
 func (r *DeleteRequest) Validate(ctx context.Context) error {
@@ -59,6 +54,20 @@ func (s *Service) Delete(ctx context.Context, r *DeleteRequest) (form *FormDelet
 	form.User, form.lc, err = s.unpackContext(ctx)
 	if err != nil {
 		return nil, err
+	}
+	var tag language.Tag
+	form.Title, tag, err = form.lc.LocalizeWithTag(&i18n.LocalizeConfig{
+		DefaultMessage: &i18n.Message{
+			ID:    "KidwordsDeleteFormTitle",
+			Other: "Delete Paper Key",
+		},
+	})
+	form.Locale = tag.String()
+	if err != nil {
+		return nil, fmt.Errorf("unable to localize title: %w", err)
+	}
+	if !r.Confirm {
+		return // do not delete without confirming
 	}
 	rp, tx, err := s.repository.BeginTransaction(ctx)
 	if err != nil {
@@ -80,5 +89,6 @@ func (s *Service) Delete(ctx context.Context, r *DeleteRequest) (form *FormDelet
 		form.Error = err.Error()
 		return
 	}
+	form.IsProcessed = true
 	return
 }
