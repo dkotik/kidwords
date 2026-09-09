@@ -1,6 +1,7 @@
 package http
 
 import (
+	"context"
 	"errors"
 	"fmt"
 	"net/http"
@@ -37,6 +38,7 @@ func New(s *service.Service, withOptions ...Option) (_ http.Handler, err error) 
 	if err != nil {
 		return nil, fmt.Errorf("unable to create a create key form handler: %w", err)
 	}
+	o.Mux.Handle(o.PathPrefix+"create", create)
 
 	update, err := o.Adaptor.AdaptFunc(
 		s.UpdateKeyFormPost,
@@ -45,14 +47,29 @@ func New(s *service.Service, withOptions ...Option) (_ http.Handler, err error) 
 	if err != nil {
 		return nil, fmt.Errorf("unable to create an update key form handler: %w", err)
 	}
+	o.Mux.Handle(o.PathPrefix+"update", update)
 
 	delete, err := o.Adaptor.AdaptFunc(
-		s.Delete,
-		htadaptor.WithTemplate(o.Templates.Delete),
+		func(ctx context.Context, r *service.DeleteRequest) (any, error) {
+			f, err := s.Delete(ctx, r)
+			if err != nil || f.Error != "" {
+				return f, err
+			}
+			return deleteFormWithRedirect{
+				FormDeleteKey: f,
+				Location:      o.PathPrefix,
+			}, nil
+		},
+		htadaptor.WithEncoder(
+			htadaptor.NewTemporaryRedirect(
+				htadaptor.NewTemplateEncoder(o.Templates.Delete),
+			),
+		),
 	)
 	if err != nil {
 		return nil, fmt.Errorf("unable to create a delete key form handler: %w", err)
 	}
+	o.Mux.Handle(o.PathPrefix+"delete", delete)
 
 	listPageTemplate, err := NewPageTemplate(
 		o.Templates.Page,
@@ -68,13 +85,16 @@ func New(s *service.Service, withOptions ...Option) (_ http.Handler, err error) 
 	if err != nil {
 		return nil, fmt.Errorf("unable to create a list key form handler: %w", err)
 	}
-
-	o.Mux.Handle(o.PathPrefix, htadaptor.NewMethodMux(&htadaptor.MethodSwitch{
-		Get:    list,
-		Post:   create,
-		Put:    update,
-		Delete: delete,
-	}))
+	o.Mux.Handle(o.PathPrefix, list)
 
 	return o.Mux, nil
+}
+
+type deleteFormWithRedirect struct {
+	*service.FormDeleteKey
+	Location string
+}
+
+func (f deleteFormWithRedirect) GetRedirectLocation() string {
+	return f.Location
 }

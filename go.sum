@@ -3,6 +3,8 @@ github.com/BurntSushi/toml v1.6.0/go.mod h1:ukJfTF/6rtPPRCnwkur4qwRxa8vTRFBF0uk2
 github.com/davecgh/go-spew v1.1.0/go.mod h1:J7Y8YcW2NihsgmVo/mv3lAwl/skON4iLHjSsI+c5H38=
 github.com/dkotik/htadaptor v0.2.2 h1:8PxdcGJ7tUoVPti59mAHTGDLjr7PkczEtgSHhZnHf2s=
 github.com/dkotik/htadaptor v0.2.2/go.mod h1:avEpRLdrUa/ojUp9SlRNO3Blk8jQtqVbyyvCplD6duo=
+github.com/dkotik/htadaptor v0.2.3 h1:CycijyBXLiRNukDTBh+t61KGdE0qXSG5bWx3SJYO+zQ=
+github.com/dkotik/htadaptor v0.2.3/go.mod h1:avEpRLdrUa/ojUp9SlRNO3Blk8jQtqVbyyvCplD6duo=
 github.com/dustin/go-humanize v1.0.1 h1:GzkhY7T5VNhEkwH0PVJgjz+fX1rhBrR7pRT3mDkpeCY=
 github.com/dustin/go-humanize v1.0.1/go.mod h1:Mu1zIs6XwVuF/gI1OepvI0qD18qycQx+mFykh5fBlto=
 github.com/google/go-cmp v0.6.0 h1:ofyhxvXcZhMsU5ulbFiLKl/XBFqE1GSq7atu8tAmTRI=

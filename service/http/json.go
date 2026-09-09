@@ -17,19 +17,10 @@ func NewJSON(s *service.Service, withOptions ...Option) (_ http.Handler, err err
 	o := &options{}
 	for _, option := range append(
 		withOptions,
-		func(o *options) error {
-			if o.Mux == nil {
-				o.Mux = http.NewServeMux()
-			}
-			if o.PathPrefix == "" {
-				o.PathPrefix = "/"
-			}
-			if o.Adaptor == nil {
-				adaptor := htadaptor.New()
-				o.Adaptor = &adaptor
-			}
-			return nil
-		}) {
+		withDefaultMux,
+		withDefaultPathPrefix,
+		withDefaultAdaptor,
+	) {
 		if err = option(o); err != nil {
 			return nil, fmt.Errorf("unable to initialize JSON handler: %w", err)
 		}

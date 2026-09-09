@@ -101,7 +101,7 @@ func TestHandlers(t *testing.T) {
 	t.Run("createPaperKey", func(t *testing.T) {
 		form := url.Values{}
 		form.Set("name", testKeyName)
-		req, err := http.NewRequest("POST", prefix, strings.NewReader(form.Encode()))
+		req, err := http.NewRequest("POST", prefix+"create", strings.NewReader(form.Encode()))
 		if err != nil {
 			t.Fatal(err)
 		}
@@ -137,7 +137,7 @@ func TestHandlers(t *testing.T) {
 		form := url.Values{}
 		form.Set("id", testKeyID)
 		form.Set("name", testKeyName+":updated")
-		req, err := http.NewRequest("PUT", prefix, strings.NewReader(form.Encode()))
+		req, err := http.NewRequest("POST", prefix+"update", strings.NewReader(form.Encode()))
 		if err != nil {
 			t.Fatal(err)
 		}
@@ -205,8 +205,8 @@ func TestHandlers(t *testing.T) {
 		form.Set("id", testKeyID)
 		form.Set("confirmation", "true")
 		req, err := http.NewRequest(
-			"DELETE",
-			prefix,
+			"POST",
+			prefix+"delete",
 			strings.NewReader(form.Encode()),
 		)
 		if err != nil {
@@ -217,7 +217,7 @@ func TestHandlers(t *testing.T) {
 		if err != nil {
 			t.Fatal(err)
 		}
-		if sc != http.StatusOK {
+		if sc != http.StatusTemporaryRedirect {
 			t.Fatalf("expected status code %d, got %d", http.StatusOK, sc)
 		}
 		if len(data) == 0 {
@@ -239,6 +239,10 @@ func newMockServer(t testing.TB, h http.Handler) pageTester {
 	server := httptest.NewTestServer(t, h)
 	t.Cleanup(server.Close)
 	client := server.Client()
+	client.CheckRedirect = func(req *http.Request, via []*http.Request) error {
+		// tell client NOT to follow redirects
+		return http.ErrUseLastResponse
+	}
 	prefix, err := url.Parse(server.URL)
 	if err != nil {
 		t.Fatal(err)

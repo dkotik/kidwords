@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"html/template"
 	"net/http"
+	"strings"
 
 	"github.com/dkotik/htadaptor"
 	"github.com/dkotik/htadaptor/staticfs"
@@ -76,8 +77,8 @@ func withDefaultMux(o *options) error {
 }
 
 func withDefaultPathPrefix(o *options) error {
-	if o.PathPrefix == "" {
-		o.PathPrefix = "/"
+	if !strings.HasSuffix(o.PathPrefix, "/") {
+		o.PathPrefix = o.PathPrefix + "/"
 	}
 	return nil
 }

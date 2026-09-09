@@ -7,14 +7,22 @@ import (
 	"testing"
 
 	"github.com/dkotik/htadaptor"
+	"github.com/dkotik/kidwords/service"
 	"github.com/dkotik/kidwords/service/secret/mock"
 )
 
 func TestHandlersJSON(t *testing.T) {
 	const prefix = "/"
 	repository := mock.New()
-	mux, err := newTestService(
+	service, err := service.New(
+		mockAuthenticator{},
 		repository,
+	)
+	if err != nil {
+		t.Fatal(err)
+	}
+	mux, err := NewJSON(
+		service,
 		WithPathPrefix(prefix),
 		WithAdaptor(
 			htadaptor.New(
