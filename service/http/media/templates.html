@@ -62,9 +62,8 @@
 {{- end }}
 
 {{ define `create` }}
-  <h1 class="title">{{ .Title }}</h1>
-  <p>{{ .Description }}</p>
-  <table class="table">
+  <h1 class="title is-size-5">{{ .Name }}</h1>
+  <table class="table is-striped is-bordered is-fullwidth is-size-7">
     {{- range .Secret -}}
       <tr>
         {{- range . -}}
@@ -78,6 +77,7 @@
       </tr>
     {{- end -}}
   </table>
+  <p class="is-size-7">{{ .Description }}</p>
   <a href="./" class="button">Back</a>
 {{ end }}
 

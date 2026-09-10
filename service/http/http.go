@@ -29,12 +29,19 @@ func New(s *service.Service, withOptions ...Option) (_ http.Handler, err error) 
 	}
 	prefix := o.PathPrefix
 
+	createPageTemplate, err := NewPageTemplate(
+		o.Templates.Page,
+		o.Templates.Create,
+	)
+	if err != nil {
+		return nil, fmt.Errorf("unable to create page creation template: %w", err)
+	}
 	create, err := o.Adaptor.AdaptStringFunc(
 		s.CreateKeyFormPost,
 		extract.StringValueExtractorFunc(func(r *http.Request) (string, error) {
 			return r.FormValue("name"), nil
 		}),
-		htadaptor.WithTemplate(o.Templates.Create),
+		htadaptor.WithTemplate(createPageTemplate),
 	)
 	if err != nil {
 		return nil, fmt.Errorf("unable to create a create key form handler: %w", err)

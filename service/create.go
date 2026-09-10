@@ -19,6 +19,7 @@ var createButtonLabel = &i18n.Message{
 type FormCreateKey struct {
 	lc     *i18n.Localizer
 	Title  string
+	Name   string
 	Locale string
 	User   User
 	Secret kidwords.Table
@@ -119,6 +120,7 @@ func (s *Service) CreateKeyFormPost(ctx context.Context, name string) (_ *FormCr
 		return form, err
 	}
 
+	form.Name = fmt.Sprintf("%x", fingerPrint)
 	form.Secret = s.encoder.MakeTable(kidwordsSecret)
 	return form, nil
 }

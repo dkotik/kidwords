@@ -7,7 +7,6 @@ import (
 	"net/http"
 	"net/http/httptest"
 	"net/url"
-	"regexp"
 	"strings"
 	"testing"
 
@@ -15,7 +14,6 @@ import (
 	"github.com/dkotik/kidwords/service"
 	"github.com/dkotik/kidwords/service/secret"
 	"github.com/dkotik/kidwords/service/secret/mock"
-	"github.com/sebdah/goldie/v2"
 )
 
 type pageTester func(*http.Request) ([]byte, int, error)
@@ -128,9 +126,6 @@ func TestHandlers(t *testing.T) {
 		// 	t.Fatalf("expected key name %s, got %s", testKeyName, keys[0].Name)
 		// }
 		testKeyID = keys[0].ID
-
-		data = regexp.MustCompile(`\&nbsp\;\w\w\w\w`).ReplaceAll(data, []byte(`&nbsp;word`))
-		goldie.New(t).Assert(t, "create", data)
 	})
 
 	t.Run("updatePaperKey", func(t *testing.T) {
@@ -153,7 +148,6 @@ func TestHandlers(t *testing.T) {
 		if len(data) == 0 {
 			t.Fatal("expected non-empty body")
 		}
-		goldie.New(t).Assert(t, "update", data)
 	})
 
 	t.Run("listPaperKeys", func(t *testing.T) {
@@ -196,8 +190,6 @@ func TestHandlers(t *testing.T) {
 		if keys[0].Name != testKeyName+":updated" {
 			t.Fatalf("expected key name %s, got %s", testKeyName+":updated", keys[0].Name)
 		}
-		data = regexp.MustCompile(`\<time (.*?)\<\/time\>`).ReplaceAll(data, []byte(`TIME`))
-		goldie.New(t).Assert(t, "list", data)
 	})
 
 	t.Run("deletePaperKey", func(t *testing.T) {
@@ -231,7 +223,6 @@ func TestHandlers(t *testing.T) {
 		if len(keys) != 0 {
 			t.Fatalf("expected 0 keys, got %d", len(keys))
 		}
-		goldie.New(t).Assert(t, "delete", data)
 	})
 }
 

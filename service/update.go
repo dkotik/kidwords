@@ -12,6 +12,7 @@ import (
 
 type FormUpdateKey struct {
 	*FormCreateKey
+	Name         string
 	KeyName      string
 	KeyNameLabel string
 	KeyNameError string
