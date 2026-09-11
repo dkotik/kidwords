@@ -142,8 +142,8 @@ func TestHandlers(t *testing.T) {
 		if err != nil {
 			t.Fatal(err)
 		}
-		if sc != http.StatusOK {
-			t.Fatalf("expected status code %d, got %d", http.StatusOK, sc)
+		if sc != http.StatusTemporaryRedirect {
+			t.Fatalf("expected status code %d, got %d", http.StatusTemporaryRedirect, sc)
 		}
 		if len(data) == 0 {
 			t.Fatal("expected non-empty body")
@@ -195,9 +195,9 @@ func TestHandlers(t *testing.T) {
 	t.Run("deletePaperKey", func(t *testing.T) {
 		form := url.Values{}
 		form.Set("id", testKeyID)
-		form.Set("confirm", "true")
+		// form.Set("confirm", "true")
 		req, err := http.NewRequest(
-			"POST",
+			http.MethodPost,
 			prefix+"delete",
 			strings.NewReader(form.Encode()),
 		)

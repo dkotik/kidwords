@@ -4,6 +4,7 @@ import (
 	"context"
 	"errors"
 	"fmt"
+	"net/http"
 
 	"github.com/nicksnyder/go-i18n/v2/i18n"
 	"golang.org/x/text/language"
@@ -38,11 +39,14 @@ func (f *FormDeleteKey) DeleteButtonLabel() (string, error) {
 }
 
 type DeleteRequest struct {
-	ID      string
-	Confirm bool
+	ID     string
+	Method string
 }
 
 func (r *DeleteRequest) Validate(ctx context.Context) error {
+	if r.Method == http.MethodGet {
+		return nil
+	}
 	if r.ID == "" {
 		return errors.New("empty ID")
 	}
@@ -66,7 +70,8 @@ func (s *Service) Delete(ctx context.Context, r *DeleteRequest) (form *FormDelet
 	if err != nil {
 		return nil, fmt.Errorf("unable to localize title: %w", err)
 	}
-	if !r.Confirm {
+	if r.Method == http.MethodGet {
+		form.ID = r.ID
 		return // do not delete without confirming
 	}
 	rp, tx, err := s.repository.BeginTransaction(ctx)

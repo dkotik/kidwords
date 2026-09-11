@@ -4,6 +4,7 @@ import (
 	"context"
 	"crypto/rand"
 	"fmt"
+	"strings"
 	"time"
 
 	"github.com/dkotik/kidwords"
@@ -105,11 +106,11 @@ func (s *Service) CreateKeyFormPost(ctx context.Context, name string) (_ *FormCr
 	if err != nil {
 		return form, err
 	}
+	form.Secret = s.encoder.MakeTable(kidwordsSecret)
 	fingerPrint := kidwordsSecret.GetFingerprint()
 	_, err = rp.Create(ctx, secret.Secret{
-		// ID:          id,
-		UserID: userID,
-		// Name:        base64.RawStdEncoding.EncodeToString(kidwordsSecret.GetFingerprint()),
+		UserID:      userID,
+		Name:        newName(form.Secret),
 		Fingerprint: fingerPrint,
 		Type:        secret.TypePaperKey,
 		SaltedHash:  argonHash.String(),
@@ -121,6 +122,25 @@ func (s *Service) CreateKeyFormPost(ctx context.Context, name string) (_ *FormCr
 	}
 
 	form.Name = fmt.Sprintf("%x", fingerPrint)
-	form.Secret = s.encoder.MakeTable(kidwordsSecret)
 	return form, nil
+}
+
+func newName(s kidwords.Table) string {
+	b := &strings.Builder{}
+	i := 0
+	for _, row := range s {
+		for _, cell := range row {
+			for _, word := range cell.Words {
+				if i > 0 {
+					_ = b.WriteByte(' ')
+				}
+				_, _ = b.WriteString(word)
+				i++
+				if i == 4 {
+					return b.String()
+				}
+			}
+		}
+	}
+	return b.String()
 }

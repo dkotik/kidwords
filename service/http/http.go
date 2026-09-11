@@ -28,6 +28,10 @@ func New(s *service.Service, withOptions ...Option) (_ http.Handler, err error) 
 		}
 	}
 	prefix := o.PathPrefix
+	methodExtractor, err := extract.NewMethodExtractor("method")
+	if err != nil {
+		return nil, fmt.Errorf("unable to create method extractor: %w", err)
+	}
 
 	createPageTemplate, err := NewPageTemplate(
 		o.Templates.Page,
@@ -48,9 +52,28 @@ func New(s *service.Service, withOptions ...Option) (_ http.Handler, err error) 
 	}
 	o.Mux.Handle(prefix+"create", create)
 
+	updatePageTemplate, err := NewPageTemplate(
+		o.Templates.Page,
+		o.Templates.Update,
+	)
+	if err != nil {
+		return nil, fmt.Errorf("unable to create update page template: %w", err)
+	}
 	update, err := o.Adaptor.AdaptFunc(
-		s.UpdateKeyFormPost,
-		htadaptor.WithTemplate(o.Templates.Update),
+		func(ctx context.Context, r *service.UpdateKeyRequest) (any, error) {
+			f, err := s.UpdateKeyFormPost(ctx, r)
+			return updateFormWithRedirect{
+				FormUpdateKey: f,
+				Location:      prefix,
+			}, err
+		},
+		htadaptor.WithQueryValues("id"),
+		htadaptor.WithExtractors(methodExtractor),
+		htadaptor.WithEncoder(
+			htadaptor.NewTemporaryRedirect(
+				htadaptor.NewTemplateEncoder(updatePageTemplate),
+			),
+		),
 	)
 	if err != nil {
 		return nil, fmt.Errorf("unable to create an update key form handler: %w", err)
@@ -72,12 +95,13 @@ func New(s *service.Service, withOptions ...Option) (_ http.Handler, err error) 
 				Location:      prefix,
 			}, err
 		},
+		htadaptor.WithExtractors(methodExtractor),
 		htadaptor.WithEncoder(
 			htadaptor.NewTemporaryRedirect(
 				htadaptor.NewTemplateEncoder(deletePageTemplate),
 			),
 		),
-		htadaptor.WithQueryValues("id"),
+		// htadaptor.WithQueryValues("id"),
 		// htadaptor.WithTemplate(o.Templates.Delete),
 	)
 	if err != nil {
@@ -110,6 +134,18 @@ type deleteFormWithRedirect struct {
 }
 
 func (f deleteFormWithRedirect) GetRedirectLocation() string {
+	if !f.IsProcessed {
+		return ""
+	}
+	return f.Location
+}
+
+type updateFormWithRedirect struct {
+	*service.FormUpdateKey
+	Location string
+}
+
+func (f updateFormWithRedirect) GetRedirectLocation() string {
 	if !f.IsProcessed {
 		return ""
 	}

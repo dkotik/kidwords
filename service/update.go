@@ -4,6 +4,7 @@ import (
 	"context"
 	"errors"
 	"fmt"
+	"net/http"
 	"strings"
 	"time"
 
@@ -17,6 +18,7 @@ type FormUpdateKey struct {
 	KeyNameLabel string
 	KeyNameError string
 	keyView
+	IsProcessed bool
 }
 
 func (f *FormUpdateKey) Title() (string, error) {
@@ -75,11 +77,15 @@ func (s *Service) updateKeyFormView(ctx context.Context, ID string) (form *FormU
 }
 
 type UpdateKeyRequest struct {
-	ID   string
-	Name string
+	ID     string
+	Name   string
+	Method string
 }
 
 func (r *UpdateKeyRequest) Validate(context.Context) error {
+	if r.Method != http.MethodPost {
+		return nil
+	}
 	if r.ID == "" {
 		return errors.New("UUID is required")
 	}
@@ -95,6 +101,19 @@ func (s *Service) UpdateKeyFormPost(ctx context.Context, req *UpdateKeyRequest) 
 	form.FormCreateKey, err = s.newFormCreateKey(ctx)
 	if err != nil {
 		return nil, err
+	}
+	form.ID = req.ID
+
+	if req.Method == http.MethodGet {
+		key, err := s.repository.Retrieve(ctx, req.ID)
+		if err != nil {
+			return nil, err
+		}
+		if key.UserID != form.User.GetID() {
+			return nil, newNotFoundError(form.lc)
+		}
+		form.Name = key.Name
+		return form, nil
 	}
 
 	rp, tx, err := s.repository.BeginTransaction(ctx)
@@ -125,6 +144,6 @@ func (s *Service) UpdateKeyFormPost(ctx context.Context, req *UpdateKeyRequest) 
 	if err != nil {
 		return form, err
 	}
-
+	form.IsProcessed = true
 	return form, nil
 }

@@ -53,6 +53,12 @@
         font-family: system-ui;
         font-size: 1.5rem;
       }
+
+      @media print {
+        .is-noprint {
+          display: none !important;
+        }
+      }
     </style>
   </head>
   <body><main>
@@ -63,7 +69,11 @@
 
 {{ define `create` }}
   <h1 class="title is-size-5">{{ .Name }}</h1>
-  <table class="table is-striped is-bordered is-fullwidth is-size-7">
+  <section class="section is-noprint">
+    <p class="is-size-7">{{ .Description }}</p>
+  </section>
+  <section class="section">
+  <table class="table is-striped is-bordered is-fullwidth is-size-6">
     {{- range .Secret -}}
       <tr>
         {{- range . -}}
@@ -77,24 +87,41 @@
       </tr>
     {{- end -}}
   </table>
-  <p class="is-size-7">{{ .Description }}</p>
-  <a href="./" class="button">Back</a>
+  <div class="buttons is-centered is-noprint">
+    <a href="./" class="button is-danger">Close</a>
+  </div>
+  </section>
 {{ end }}
 
 {{ define `update` }}
 <h1 class="title">{{ .Title }}</h1>
-<p>{{ .Description }}</p>
-<form action="" method="PUT" class="form">
+<section class="section">
+  <p>{{ .Description }}</p>
+</section>
+<section class="section">
+<form id="update" action="?id={{ .ID }}" method="post" class="form">
   <fieldset>
     <div class="field">
       <input type="hidden" name="id" value="{{ .ID }}" />
       <label class="label" for="name">{{ .NameFieldLabel }} *</label>
       <input class="input" name="name" value="{{ .Name }}" placeholder="..." required />
     </div>
-    <input class="button is-primary" type="submit" value="{{ .UpdateButtonLabel }}" />
-    <a href="./" class="button">Cancel</a>
   </fieldset>
 </form>
+<form id="delete" action="delete" method="post" class="form">
+  <fieldset>
+    <div class="field">
+      <input type="hidden" name="id" value="{{ .ID }}" />
+    </div>
+  </fieldset>
+</form>
+<br />
+<div class="buttons is-right">
+  <a href="./" class="button is-ghost">Cancel</a>
+  <button class="button is-ghost is-danger" form="delete">Delete</button>
+  <button class="button is-primary" form="update">{{ .UpdateButtonLabel }}</button>
+</div>
+</section>
 {{ end }}
 
 {{ define `delete` }}
@@ -102,41 +129,50 @@
     Redirecting...
   {{ else }}
     <h1 class="title">{{ .Title }}</h1>
-    <p>{{ .Description }}</p>
-    <form action="" method="post" class="form p-4">
-      <fieldset>
-        <div class="field has-text-centered">
-          <input type="hidden" name="id" value="{{ .ID }}" />
-          <input type="hidden" name="confirm" value="true" />
-          <a href="./" class="button">Cancel</a>
-          <input class="button is-danger" type="submit" value="{{ .DeleteButtonLabel }}" />
-        </div>
-      </fieldset>
-    </form>
+    <section class="section">
+      <p>{{ .Description }}</p>
+    </section>
+    <section class="section">
+      <form action="" method="post" class="form p-4">
+        <fieldset>
+          <div class="field has-text-centered">
+            <input type="hidden" name="id" value="{{ .ID }}" />
+            <input type="hidden" name="confirm" value="true" />
+            <a href="./" class="button">Cancel</a>
+            <input class="button is-danger" type="submit" value="{{ .DeleteButtonLabel }}" />
+          </div>
+        </fieldset>
+      </form>
+    </section>
   {{ end }}
 {{ end }}
 
 {{ define `list` }}
   <h1 class="title">{{ .Title }}</h1>
-  <p>{{ .Description }}</p>
+  <section class="section">
+    <p>{{ .Description }}</p>
+  </section>
+  <section class="section content">
+  <ul>
     {{- range .PaperKeys -}}
-        <article class="message my-5">
-          <div class="message-header">
-            <p>
-              {{- .Name }}
-              ({{- or .Fingerprint "no fingerprint" -}})
-            </p>
-            <a class="delete" aria-label="delete" href="delete?id={{ .ID }}"></a>
-          </div>
-          <div class="message-body">
-            <time datetime="{{ .CreatedAtFull }}">{{- .CreatedAt -}}</time>
-            <time datetime="{{ .LastAcceptedAtFull }}">{{- .LastAcceptedAt -}}</time>
-          </div>
-        </article>
+    <li>
+      <a href="update?id={{ .ID }}">
+        {{- .Name -}}
+        {{- if .LastAcceptedAtFull -}}
+        &nbsp;(used)
+        {{- else -}}
+          &nbsp;<time datetime="{{ .CreatedAtFull }}">({{- .CreatedAt -}})</time>
+        {{- end -}}
+      </a>
+    </li>
     {{- end -}}
-  <form method="post" action="create" class="form mt-4">
-    <div class="field has-text-centered">
-      <input type="submit" name="create" class="button is-success" value="{{ .CreateKeyTitle }}"/>
-    </div>
-  </form>
+  </ul>
+  </section>
+  <section class="section">
+    <form method="post" action="create" class="form mt-4">
+      <div class="field has-text-centered">
+        <input type="submit" name="create" class="button" value="{{ .CreateKeyTitle }}"/>
+      </div>
+    </form>
+  </section>
 {{ end }}

@@ -44,8 +44,8 @@ func newKeyView(s secret.Secret) (v keyView) {
 	v.UpdatedAtFull = s.UpdatedAt.Format(time.RFC3339)
 	if !s.LastAcceptedAt.IsZero() {
 		v.LastAcceptedAt = s.LastAcceptedAt.Format(time.RFC3339)
+		v.LastAcceptedAtFull = s.LastAcceptedAt.Format(time.RFC3339)
 	}
-	v.LastAcceptedAtFull = s.LastAcceptedAt.Format(time.RFC3339)
 	return v
 }
 
