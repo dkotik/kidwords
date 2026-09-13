@@ -2,98 +2,26 @@ package service
 
 import (
 	"context"
-	"errors"
 	"fmt"
-	"net/http"
-
-	"github.com/nicksnyder/go-i18n/v2/i18n"
-	"golang.org/x/text/language"
 )
 
-var deleteButtonLabel = &i18n.Message{
-	ID:    "KidwordsDeleteButtonLabel",
-	Other: "Delete",
-}
-
-type FormDeleteKey struct {
-	lc     *i18n.Localizer
-	Locale string
-	Title  string
-	User   User
-	keyView
-	Error       string
-	IsProcessed bool
-}
-
-func (f *FormDeleteKey) Description() (string, error) {
-	return f.lc.Localize(&i18n.LocalizeConfig{
-		DefaultMessage: &i18n.Message{
-			ID:    "KidwordsDeleteFormDescription",
-			Other: "Are you certain that you would like to remove this paper key from your account? You will not be able to restore access to your account using this key anymore. Service administration might keep a copy of the key for some time as proof of account ownership, by service policy, in case your account has been hacked and access to it must be restored.",
-		},
-	})
-}
-
-func (f *FormDeleteKey) DeleteButtonLabel() (string, error) {
-	return f.lc.LocalizeMessage(deleteButtonLabel)
-}
-
-type DeleteRequest struct {
-	ID     string
-	Method string
-}
-
-func (r *DeleteRequest) Validate(ctx context.Context) error {
-	if r.Method == http.MethodGet {
-		return nil
-	}
-	if r.ID == "" {
-		return errors.New("empty ID")
-	}
-	return nil
-}
-
-func (s *Service) Delete(ctx context.Context, r *DeleteRequest) (form *FormDeleteKey, err error) {
-	form = &FormDeleteKey{}
-	form.User, form.lc, err = s.unpackContext(ctx)
+func (s *Service) Delete(ctx context.Context, ID string) (v *KeyView, err error) {
+	user, err := s.authenticator.Authenticate(ctx)
 	if err != nil {
-		return nil, err
-	}
-	var tag language.Tag
-	form.Title, tag, err = form.lc.LocalizeWithTag(&i18n.LocalizeConfig{
-		DefaultMessage: &i18n.Message{
-			ID:    "KidwordsDeleteFormTitle",
-			Other: "Delete Paper Key",
-		},
-	})
-	form.Locale = tag.String()
-	if err != nil {
-		return nil, fmt.Errorf("unable to localize title: %w", err)
-	}
-	if r.Method == http.MethodGet {
-		form.ID = r.ID
-		return // do not delete without confirming
+		return nil, fmt.Errorf("unable to authenticate user: %w", err)
 	}
 	rp, tx, err := s.repository.BeginTransaction(ctx)
 	if err != nil {
 		return nil, fmt.Errorf("unable to begin transaction: %w", err)
 	}
 	defer tx.Close(&err)
-	key, err := rp.Retrieve(ctx, r.ID)
+	scrt, err := rp.Retrieve(ctx, ID)
 	if err != nil {
-		form.Error = err.Error()
-		return
+		return nil, err
 	}
-	form.keyView = newKeyView(key)
-	if key.UserID != form.User.GetID() {
-		form.Error = newNotFoundError(form.lc).Error()
-		return
-	}
-	err = rp.Delete(ctx, r.ID)
+	v, err = NewKeyView(user, scrt)
 	if err != nil {
-		form.Error = err.Error()
-		return
+		return nil, err
 	}
-	form.IsProcessed = true
-	return
+	return v, rp.Delete(ctx, ID)
 }

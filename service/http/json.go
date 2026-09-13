@@ -3,7 +3,9 @@ package http
 import (
 	"errors"
 	"fmt"
+	"io"
 	"net/http"
+	"net/url"
 
 	"github.com/dkotik/htadaptor"
 	"github.com/dkotik/htadaptor/extract"
@@ -25,9 +27,27 @@ func NewJSON(s *service.Service, withOptions ...Option) (_ http.Handler, err err
 			return nil, fmt.Errorf("unable to initialize JSON handler: %w", err)
 		}
 	}
+	idExtractor := extract.StringValueExtractorFunc(
+		func(r *http.Request) (string, error) {
+			// DELETE requests form body is not automatically parsed
+			// by the standard library, so we need to read it manually.
+			body, err := io.ReadAll(r.Body)
+			if err != nil {
+				return "", err
+			}
+			defer r.Body.Close()
+
+			formData, err := url.ParseQuery(string(body))
+			if err != nil {
+				return "", err
+
+			}
+			return formData.Get("id"), nil
+		},
+	)
 
 	create, err := o.Adaptor.AdaptStringFunc(
-		s.CreateKeyFormPost,
+		s.CreateKey,
 		extract.StringValueExtractorFunc(func(r *http.Request) (string, error) {
 			return r.FormValue("name"), nil
 		}),
@@ -37,14 +57,15 @@ func NewJSON(s *service.Service, withOptions ...Option) (_ http.Handler, err err
 	}
 
 	update, err := o.Adaptor.AdaptFunc(
-		s.UpdateKeyFormPost,
+		s.UpdateKey,
 	)
 	if err != nil {
 		return nil, fmt.Errorf("unable to create an update key form handler: %w", err)
 	}
 
-	delete, err := o.Adaptor.AdaptFunc(
+	delete, err := o.Adaptor.AdaptStringFunc(
 		s.Delete,
+		idExtractor,
 	)
 	if err != nil {
 		return nil, fmt.Errorf("unable to create a delete key form handler: %w", err)

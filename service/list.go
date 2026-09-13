@@ -59,13 +59,11 @@ func (v keyListView) Description() (string, error) {
 }
 
 func (v keyListView) CreateKeyTitle() (string, error) {
-	return v.lc.LocalizeMessage(createButtonLabel)
+	return "Create Key", nil
 }
 
 func (f keyListView) DeleteButtonLabel() (string, error) {
-	return f.lc.Localize(&i18n.LocalizeConfig{
-		DefaultMessage: deleteButtonLabel,
-	})
+	return "Delete", nil
 }
 
 func (s *Service) List(ctx context.Context) (view keyListView, err error) {

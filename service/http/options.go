@@ -1,6 +1,7 @@
 package http
 
 import (
+	"context"
 	"errors"
 	"fmt"
 	"html/template"
@@ -9,13 +10,26 @@ import (
 
 	"github.com/dkotik/htadaptor"
 	"github.com/dkotik/htadaptor/staticfs"
+	"github.com/nicksnyder/go-i18n/v2/i18n"
+	"golang.org/x/text/language"
 )
+
+type Localizer interface {
+	GetLocalizer(context.Context) *i18n.Localizer
+}
+
+type LocalizerFunc func(context.Context) *i18n.Localizer
+
+func (f LocalizerFunc) GetLocalizer(ctx context.Context) *i18n.Localizer {
+	return f(ctx)
+}
 
 type options struct {
 	Mux        *http.ServeMux
 	PathPrefix string
 	Adaptor    *htadaptor.Adaptor
 	Templates  *Templates
+	Localizer  Localizer
 }
 
 type Option func(*options) error
@@ -65,6 +79,19 @@ func WithTemplates(templates Templates) Option {
 			return errors.New("templates already set")
 		}
 		o.Templates = &templates
+		return nil
+	}
+}
+
+func WithLocalizer(localizer Localizer) Option {
+	return func(o *options) error {
+		if localizer == nil {
+			return errors.New("nil localizer")
+		}
+		if o.Localizer != nil {
+			return errors.New("localizer already set")
+		}
+		o.Localizer = localizer
 		return nil
 	}
 }
@@ -143,6 +170,16 @@ func withDefaultTemplates(o *options) error {
 	}
 	if !o.Templates.isComplete() {
 		return errors.New("some default templates are missing")
+	}
+	return nil
+}
+
+func withDefaultLocalizer(o *options) error {
+	if o.Localizer == nil {
+		lc := i18n.NewLocalizer(i18n.NewBundle(language.English))
+		o.Localizer = LocalizerFunc(func(context.Context) *i18n.Localizer {
+			return lc
+		})
 	}
 	return nil
 }

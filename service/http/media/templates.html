@@ -68,17 +68,18 @@
 {{- end }}
 
 {{ define `create` }}
-  <h1 class="title is-size-5">{{ .Name }}</h1>
-  <section class="section is-noprint">
-    <p class="is-size-7">{{ .Description }}</p>
-  </section>
-  <section class="section">
   <table class="table is-striped is-bordered is-fullwidth is-size-6">
-    {{- range .Secret -}}
+    <thead>
+      <th colspan="8" class="is-info">
+        Paper Recovery Key: {{ .Name }}
+      </th>
+    </thead>
+    <tbody>
+    {{- range .Secret.Secret -}}
       <tr>
         {{- range . -}}
-          <td><nobr>
-              {{- .Index -}}
+          <td><nobr class="is-family-monospace">
+              <strong>{{- .Index -}}</strong>
               {{- range .Words -}}
                 &nbsp;{{ . -}}
               {{- end -}}
@@ -86,11 +87,20 @@
         {{- end -}}
       </tr>
     {{- end -}}
+    </tbody>
+    <tfoot>
+      <tr>
+        <td colspan="8">
+          <p class="is-size-7 help">
+            {{ .Description }}
+          </p>
+        </td>
+      </tr>
+    </tfoot>
   </table>
   <div class="buttons is-centered is-noprint">
-    <a href="./" class="button is-danger">Close</a>
+    <a href="./" class="button is-danger is-light">Close</a>
   </div>
-  </section>
 {{ end }}
 
 {{ define `update` }}
@@ -108,7 +118,7 @@
     </div>
   </fieldset>
 </form>
-<form id="delete" action="delete" method="post" class="form">
+<form id="delete" action="delete" method="get" class="form">
   <fieldset>
     <div class="field">
       <input type="hidden" name="id" value="{{ .ID }}" />
@@ -125,9 +135,6 @@
 {{ end }}
 
 {{ define `delete` }}
-  {{ if .IsProcessed }}
-    Redirecting...
-  {{ else }}
     <h1 class="title">{{ .Title }}</h1>
     <section class="section">
       <p>{{ .Description }}</p>
@@ -137,14 +144,12 @@
         <fieldset>
           <div class="field has-text-centered">
             <input type="hidden" name="id" value="{{ .ID }}" />
-            <input type="hidden" name="confirm" value="true" />
-            <a href="./" class="button">Cancel</a>
-            <input class="button is-danger" type="submit" value="{{ .DeleteButtonLabel }}" />
+            <a href="./" class="button">{{ .LabelCancel }}</a>
+            <input class="button is-danger" type="submit" value="{{ .LabelDelete }}" />
           </div>
         </fieldset>
       </form>
     </section>
-  {{ end }}
 {{ end }}
 
 {{ define `list` }}

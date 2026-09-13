@@ -193,10 +193,23 @@ func TestHandlers(t *testing.T) {
 	})
 
 	t.Run("deletePaperKey", func(t *testing.T) {
+		req, err := http.NewRequest(
+			http.MethodGet,
+			prefix+"delete?id="+testKeyID,
+			nil,
+		)
+		if err != nil {
+			t.Fatal(err)
+		}
+		data, sc, err := server(req)
+		if err != nil {
+			t.Fatal(err)
+		}
+
 		form := url.Values{}
 		form.Set("id", testKeyID)
 		// form.Set("confirm", "true")
-		req, err := http.NewRequest(
+		req, err = http.NewRequest(
 			http.MethodPost,
 			prefix+"delete",
 			strings.NewReader(form.Encode()),
@@ -205,7 +218,7 @@ func TestHandlers(t *testing.T) {
 			t.Fatal(err)
 		}
 		req.Header.Set("Content-Type", "application/x-www-form-urlencoded")
-		data, sc, err := server(req)
+		data, sc, err = server(req)
 		if err != nil {
 			t.Fatal(err)
 		}

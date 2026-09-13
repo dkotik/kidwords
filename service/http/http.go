@@ -22,15 +22,17 @@ func New(s *service.Service, withOptions ...Option) (_ http.Handler, err error) 
 		withDefaultPathPrefix,
 		withDefaultAdaptor,
 		withDefaultTemplates,
+		withDefaultLocalizer,
 	) {
 		if err = option(o); err != nil {
 			return nil, fmt.Errorf("unable to initialize HTTP handler: %w", err)
 		}
 	}
 	prefix := o.PathPrefix
-	methodExtractor, err := extract.NewMethodExtractor("method")
+	lcExtractor := o.Localizer
+	idExtractor, err := extract.NewQueryValueExtractor("id")
 	if err != nil {
-		return nil, fmt.Errorf("unable to create method extractor: %w", err)
+		return nil, fmt.Errorf("unable to create query value extractor for delete key form: %w", err)
 	}
 
 	createPageTemplate, err := NewPageTemplate(
@@ -41,7 +43,21 @@ func New(s *service.Service, withOptions ...Option) (_ http.Handler, err error) 
 		return nil, fmt.Errorf("unable to create page creation template: %w", err)
 	}
 	create, err := o.Adaptor.AdaptStringFunc(
-		s.CreateKeyFormPost,
+		func(ctx context.Context, name string) (*formCreateKey, error) {
+			scrt, err := s.CreateKey(ctx, name)
+			if err != nil {
+				return nil, err
+			}
+			lc := lcExtractor.GetLocalizer(ctx)
+			form, err := newForm(lc)
+			if err != nil {
+				return nil, fmt.Errorf("unable to create form: %w", err)
+			}
+			return &formCreateKey{
+				form:   form,
+				Secret: scrt,
+			}, nil
+		},
 		extract.StringValueExtractorFunc(func(r *http.Request) (string, error) {
 			return r.FormValue("name"), nil
 		}),
@@ -59,26 +75,60 @@ func New(s *service.Service, withOptions ...Option) (_ http.Handler, err error) 
 	if err != nil {
 		return nil, fmt.Errorf("unable to create update page template: %w", err)
 	}
-	update, err := o.Adaptor.AdaptFunc(
-		func(ctx context.Context, r *service.UpdateKeyRequest) (any, error) {
-			f, err := s.UpdateKeyFormPost(ctx, r)
-			return updateFormWithRedirect{
-				FormUpdateKey: f,
-				Location:      prefix,
-			}, err
+
+	getUpdate, err := o.Adaptor.AdaptStringFunc(
+		func(ctx context.Context, ID string) (*formUpdateKey, error) {
+			keyView, err := s.ViewKey(ctx, ID)
+			if err != nil {
+				return nil, err
+			}
+			lc := lcExtractor.GetLocalizer(ctx)
+			form, err := newForm(lc)
+			if err != nil {
+				return nil, fmt.Errorf("unable to create form: %w", err)
+			}
+			return &formUpdateKey{
+				form:    form,
+				KeyView: keyView,
+			}, nil
 		},
-		htadaptor.WithQueryValues("id"),
-		htadaptor.WithExtractors(methodExtractor),
+		idExtractor,
+		htadaptor.WithTemplate(updatePageTemplate),
+	)
+	if err != nil {
+		return nil, fmt.Errorf("unable to create a delete key form handler: %w", err)
+	}
+	o.Mux.Handle(prefix+"update", getUpdate)
+
+	update, err := o.Adaptor.AdaptFunc(
+		func(ctx context.Context, r *service.UpdateKeyRequest) (*formUpdateKey, error) {
+			keyView, err := s.UpdateKey(ctx, r)
+			if err != nil {
+				return nil, err
+			}
+			lc := lcExtractor.GetLocalizer(ctx)
+			form, err := newForm(lc)
+			if err != nil {
+				return nil, fmt.Errorf("unable to create form: %w", err)
+			}
+			form.Redirect = prefix
+			return &formUpdateKey{
+				form:    form,
+				KeyView: keyView,
+			}, nil
+		},
 		htadaptor.WithEncoder(
 			htadaptor.NewTemporaryRedirect(
 				htadaptor.NewTemplateEncoder(updatePageTemplate),
 			),
 		),
+		// htadaptor.WithQueryValues("id"),
+		// htadaptor.WithTemplate(o.Templates.Delete),
 	)
 	if err != nil {
-		return nil, fmt.Errorf("unable to create an update key form handler: %w", err)
+		return nil, fmt.Errorf("unable to create a delete key form handler: %w", err)
 	}
-	o.Mux.Handle(prefix+"update", update)
+	o.Mux.Handle("POST "+prefix+"update", update)
 
 	deletePageTemplate, err := NewPageTemplate(
 		o.Templates.Page,
@@ -87,15 +137,53 @@ func New(s *service.Service, withOptions ...Option) (_ http.Handler, err error) 
 	if err != nil {
 		return nil, fmt.Errorf("unable to create delete page template: %w", err)
 	}
-	delete, err := o.Adaptor.AdaptFunc(
-		func(ctx context.Context, r *service.DeleteRequest) (any, error) {
-			f, err := s.Delete(ctx, r)
-			return deleteFormWithRedirect{
-				FormDeleteKey: f,
-				Location:      prefix,
-			}, err
+
+	getDelete, err := o.Adaptor.AdaptStringFunc(
+		func(ctx context.Context, ID string) (*formDeleteKey, error) {
+			keyView, err := s.ViewKey(ctx, ID)
+			if err != nil {
+				return nil, err
+			}
+			lc := lcExtractor.GetLocalizer(ctx)
+			form, err := newForm(lc)
+			if err != nil {
+				return nil, fmt.Errorf("unable to create form: %w", err)
+			}
+			return &formDeleteKey{
+				form:    form,
+				KeyView: keyView,
+			}, nil
 		},
-		htadaptor.WithExtractors(methodExtractor),
+		idExtractor,
+		htadaptor.WithTemplate(deletePageTemplate),
+	)
+	if err != nil {
+		return nil, fmt.Errorf("unable to create a delete key form handler: %w", err)
+	}
+	o.Mux.Handle(prefix+"delete", getDelete)
+
+	delete, err := o.Adaptor.AdaptStringFunc(
+		func(ctx context.Context, ID string) (*formDeleteKey, error) {
+			keyView, err := s.Delete(ctx, ID)
+			if err != nil {
+				return nil, err
+			}
+			lc := lcExtractor.GetLocalizer(ctx)
+			form, err := newForm(lc)
+			if err != nil {
+				return nil, fmt.Errorf("unable to create form: %w", err)
+			}
+			form.Redirect = prefix
+			return &formDeleteKey{
+				form:    form,
+				KeyView: keyView,
+			}, nil
+		},
+		extract.StringValueExtractorFunc(
+			func(r *http.Request) (string, error) {
+				return r.FormValue("id"), nil
+			},
+		),
 		htadaptor.WithEncoder(
 			htadaptor.NewTemporaryRedirect(
 				htadaptor.NewTemplateEncoder(deletePageTemplate),
@@ -107,7 +195,7 @@ func New(s *service.Service, withOptions ...Option) (_ http.Handler, err error) 
 	if err != nil {
 		return nil, fmt.Errorf("unable to create a delete key form handler: %w", err)
 	}
-	o.Mux.Handle(prefix+"delete", delete)
+	o.Mux.Handle("POST "+prefix+"delete", delete)
 
 	listPageTemplate, err := NewPageTemplate(
 		o.Templates.Page,
@@ -126,28 +214,4 @@ func New(s *service.Service, withOptions ...Option) (_ http.Handler, err error) 
 	o.Mux.Handle(prefix, list)
 
 	return o.Mux, nil
-}
-
-type deleteFormWithRedirect struct {
-	*service.FormDeleteKey
-	Location string
-}
-
-func (f deleteFormWithRedirect) GetRedirectLocation() string {
-	if !f.IsProcessed {
-		return ""
-	}
-	return f.Location
-}
-
-type updateFormWithRedirect struct {
-	*service.FormUpdateKey
-	Location string
-}
-
-func (f updateFormWithRedirect) GetRedirectLocation() string {
-	if !f.IsProcessed {
-		return ""
-	}
-	return f.Location
 }
