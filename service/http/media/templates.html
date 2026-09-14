@@ -58,6 +58,11 @@
         .is-noprint {
           display: none !important;
         }
+
+        .page-break {
+          break-after: page;
+          page-break-after: always;
+        }
       }
     </style>
   </head>
@@ -71,7 +76,7 @@
   <table class="table is-striped is-bordered is-fullwidth is-size-6">
     <thead>
       <th colspan="8" class="is-info">
-        Paper Recovery Key: {{ .Name }}
+        {{ .Name }}
       </th>
     </thead>
     <tbody>
@@ -98,8 +103,14 @@
       </tr>
     </tfoot>
   </table>
-  <div class="buttons is-centered is-noprint">
-    <a href="./" class="button is-danger is-light">Close</a>
+  <div class="level is-noprint">
+    <div class="level-left">
+      <button class="button is-info is-light">Split</button>
+    </div>
+    <a href="./" class="level-item button is-danger is-light">Close</a>
+    <div class="level-right">
+      <button class="button is-info is-light" onclick="window.print()">Print</button>
+    </div>
   </div>
 {{ end }}
 

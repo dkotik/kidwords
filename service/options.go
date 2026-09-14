@@ -8,7 +8,7 @@ import (
 
 const (
 	DefaultKeyCount    = 12
-	DefaultKeyLength   = 12
+	DefaultKeyLength   = 11
 	DefaultShardCount  = 12
 	DefaultQuorumCount = 6
 )

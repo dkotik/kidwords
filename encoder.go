@@ -74,9 +74,11 @@ func (e *encoder) shardToWords(shard Shard) (words []string) {
 		// words = append(words, "????")
 	}
 
-	// remaining blanks
-	for range 4 - (count % 4) {
-		words = append(words, blank)
+	remainingBlanks := 4 - (count % 4)
+	if remainingBlanks < 4 {
+		for range remainingBlanks {
+			words = append(words, blank)
+		}
 	}
 
 	return words
@@ -84,11 +86,9 @@ func (e *encoder) shardToWords(shard Shard) (words []string) {
 
 func (e *encoder) MakeTable(shards Secret) (table Table) {
 	var (
-		shard Shard
-		words []string
-		cells []Cell
-		// rows  [][]Cell
-		// cell  Cell
+		shard       Shard
+		words       []string
+		cells       []Cell
 		i, j, lastJ int
 	)
 	for chunk := range slices.Chunk(shards, e.Columns) {

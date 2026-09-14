@@ -41,8 +41,51 @@ func TestEncode(t *testing.T) {
 				t.Fatal(err)
 			}
 			t.Log(b.String())
-
-			// t.Fail()
 		})
+	}
+}
+
+func TestForEmptyRows(t *testing.T) {
+	tcs := []struct {
+		Count  int
+		Quorum int
+		Secret []byte
+	}{
+		{Count: 12, Quorum: 6, Secret: []byte("34534a23n")},
+		{Count: 12, Quorum: 6, Secret: []byte("3453a5234a")},
+		{Count: 12, Quorum: 6, Secret: []byte("gho3452f4bn")},
+		{Count: 12, Quorum: 6, Secret: []byte("gho3452f4bn1")},
+	}
+	encoder, err := NewEncoder(
+		dictionary.EnglishFourLetterNouns,
+		dictionary.EnglishFourLetterVerbs,
+		3,
+	)
+	if err != nil {
+		t.Fatal(err)
+	}
+
+	for i, tc := range tcs {
+		shards, err := NewSecret(tc.Secret, tc.Count, tc.Quorum)
+		if err != nil {
+			t.Fatal(err)
+		}
+
+		table := encoder.MakeTable(shards)
+		for _, row := range table {
+			for _, cell := range row {
+				empty := true
+				for _, word := range cell.Words {
+					if word != "" && word != blank {
+						empty = false
+						break
+					}
+				}
+				t.Logf("row: %2d %v", cell.Index, cell.Words)
+				if empty {
+					t.Fatalf("test case %d: found empty row in table for secret %q", i+1, tc.Secret)
+				}
+			}
+		}
 	}
 }
