@@ -70,3 +70,12 @@ func (f *form) LabelDelete() (string, error) {
 		},
 	})
 }
+
+func (f *form) NameFieldLabel() (string, error) {
+	return f.lc.Localize(&i18n.LocalizeConfig{
+		DefaultMessage: &i18n.Message{
+			ID:    "KidwordsNameFieldLabel",
+			Other: "Paper Key Name",
+		},
+	})
+}

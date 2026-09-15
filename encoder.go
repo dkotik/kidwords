@@ -6,8 +6,6 @@ import (
 	"fmt"
 	"io"
 	"slices"
-
-	"github.com/dkotik/kidwords/dictionary"
 )
 
 const blank = "    "
@@ -25,12 +23,12 @@ type Encoder interface {
 }
 
 type encoder struct {
-	Nouns   dictionary.Dictionary
-	Verbs   dictionary.Dictionary
+	Nouns   Dictionary
+	Verbs   Dictionary
 	Columns int
 }
 
-func NewEncoder(nouns, verbs dictionary.Dictionary, columns int) (_ Encoder, err error) {
+func NewEncoder(nouns, verbs Dictionary, columns int) (_ Encoder, err error) {
 	if err = nouns.Validate(); err != nil {
 		return nil, err
 	}
@@ -61,17 +59,13 @@ func (e *encoder) shardToWords(shard Shard) (words []string) {
 		index++
 		if index%3 == 0 && verbsCount > 0 && index > 0 {
 			words = append(words, e.Verbs[verbBytes[4-verbsCount]])
-			// words = append(words, "****")
 			verbsCount--
-			// index += 4
-			// index++
 		}
 	}
 
 	// remaining verbs
 	for ; verbsCount > 0; verbsCount-- {
 		words = append(words, e.Verbs[verbBytes[4-verbsCount]])
-		// words = append(words, "????")
 	}
 
 	remainingBlanks := 4 - (count % 4)

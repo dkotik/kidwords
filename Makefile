@@ -12,7 +12,8 @@ short:
 	@date +"[ %T ]"
 generate:
 	@clear
-	@output=$$(go generate ./... && go test . -update) || echo "$$output"
+	@output=$$(go generate ./...) || echo "$$output"
+	@#output=$$(go generate ./... && go test . -update) || echo "$$output"
 	@date +"[ %T ]"
 build:
 	cd cmd/kidwords && goreleaser release --snapshot --clean

@@ -42,31 +42,52 @@ func New(s *service.Service, withOptions ...Option) (_ http.Handler, err error) 
 	if err != nil {
 		return nil, fmt.Errorf("unable to create page creation template: %w", err)
 	}
-	create, err := o.Adaptor.AdaptStringFunc(
-		func(ctx context.Context, name string) (*formCreateKey, error) {
-			scrt, err := s.CreateKey(ctx, name)
-			if err != nil {
-				return nil, err
-			}
+	getCreate, err := o.Adaptor.AdaptNullaryFunc(
+		func(ctx context.Context) (form *formCreateKey, err error) {
 			lc := lcExtractor.GetLocalizer(ctx)
-			form, err := newForm(lc)
+			form = &formCreateKey{
+				Split: 1,
+			}
+			form.form, err = newForm(lc)
 			if err != nil {
 				return nil, fmt.Errorf("unable to create form: %w", err)
 			}
-			return &formCreateKey{
-				form:   form,
-				Secret: scrt,
-			}, nil
+			return form, nil
 		},
-		extract.StringValueExtractorFunc(func(r *http.Request) (string, error) {
-			return r.FormValue("name"), nil
-		}),
 		htadaptor.WithTemplate(createPageTemplate),
 	)
 	if err != nil {
 		return nil, fmt.Errorf("unable to create a create key form handler: %w", err)
 	}
-	o.Mux.Handle(prefix+"create", create)
+	o.Mux.Handle(prefix+"create", getCreate)
+	create, err := o.Adaptor.AdaptFunc(
+		func(ctx context.Context, r *CreateKeyRequest) (form *formCreateKey, err error) {
+			lc := lcExtractor.GetLocalizer(ctx)
+			form = &formCreateKey{
+				Name:  r.Name,
+				Split: r.Split,
+			}
+			form.form, err = newForm(lc)
+			if err != nil {
+				return nil, fmt.Errorf("unable to create form: %w", err)
+			}
+			err = r.ValidatePost(ctx)
+			if err != nil {
+				form.Error = err.Error()
+				return form, nil
+			}
+			form.Secret, err = s.CreateKey(ctx, r.Name)
+			if err != nil {
+				form.Error = err.Error()
+			}
+			return form, nil
+		},
+		htadaptor.WithTemplate(createPageTemplate),
+	)
+	if err != nil {
+		return nil, fmt.Errorf("unable to create a create key form handler: %w", err)
+	}
+	o.Mux.Handle("POST "+prefix+"create", create)
 
 	updatePageTemplate, err := NewPageTemplate(
 		o.Templates.Page,

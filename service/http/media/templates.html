@@ -73,6 +73,7 @@
 {{- end }}
 
 {{ define `create` }}
+  {{ if .Secret }}
   <table class="table is-striped is-bordered is-fullwidth is-size-6">
     <thead>
       <th colspan="8" class="is-info">
@@ -112,6 +113,47 @@
       <button class="button is-info is-light" onclick="window.print()">Print</button>
     </div>
   </div>
+  {{- else -}}
+  <h1 class="title">{{ .Title }}</h1>
+  <section class="section">
+    <p>{{ .Description }}</p>
+  </section>
+  <section class="section">
+    <form action="create" method="post" class="form p-4">
+      <fieldset>
+        <div class="field">
+          <label class="label" for="name">{{ .NameFieldLabel }} *</label>
+          <input class="input" name="name" value="{{ .Name }}" placeholder="..." required />
+        </div>
+        <div class="field">
+          <label class="label" for="split">{{ .NameFieldLabel }} *</label>
+          <div class="radios">
+            <label class="radio">
+              <input type="radio"name="split" value="1"{{ if eq .Split 1 }} checked{{end}} />
+              One Page
+            </label>
+            <label class="radio">
+              <input type="radio" name="split" value="2"{{ if eq .Split 2 }} checked{{end}} />
+              Two Pages
+            </label>
+            <label class="radio">
+              <input type="radio" name="split" value="3"{{ if eq .Split 3 }} checked{{end}} />
+              Three Pages
+            </label>
+            <label class="radio">
+              <input type="radio" name="split" value="4"{{ if eq .Split 4 }} checked{{end}} />
+              Four Pages
+            </label>
+          </div>
+        </div>
+        <div class="field has-text-centered">
+          <a href="./" class="button">{{ .LabelCancel }}</a>
+          <input class="button is-danger" type="submit" value="{{ .LabelCreate }}" />
+        </div>
+      </fieldset>
+    </form>
+  </section>
+  {{- end -}}
 {{ end }}
 
 {{ define `update` }}
@@ -184,11 +226,7 @@
     {{- end -}}
   </ul>
   </section>
-  <section class="section">
-    <form method="post" action="create" class="form mt-4">
-      <div class="field has-text-centered">
-        <input type="submit" name="create" class="button" value="{{ .CreateKeyTitle }}"/>
-      </div>
-    </form>
+  <section class="section has-text-centered mt-4">
+    <a href="create" class="button">{{ .CreateKeyTitle }}</a>
   </section>
 {{ end }}

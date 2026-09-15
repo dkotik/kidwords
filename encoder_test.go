@@ -4,8 +4,6 @@ import (
 	"bytes"
 	"fmt"
 	"testing"
-
-	"github.com/dkotik/kidwords/dictionary"
 )
 
 func TestEncode(t *testing.T) {
@@ -26,8 +24,8 @@ func TestEncode(t *testing.T) {
 	}
 
 	encoder, err := NewEncoder(
-		dictionary.EnglishFourLetterNouns,
-		dictionary.EnglishFourLetterVerbs,
+		EnglishFourLetterNouns,
+		EnglishFourLetterVerbs,
 		3,
 	)
 	if err != nil {
@@ -57,8 +55,8 @@ func TestForEmptyRows(t *testing.T) {
 		{Count: 12, Quorum: 6, Secret: []byte("gho3452f4bn1")},
 	}
 	encoder, err := NewEncoder(
-		dictionary.EnglishFourLetterNouns,
-		dictionary.EnglishFourLetterVerbs,
+		EnglishFourLetterNouns,
+		EnglishFourLetterVerbs,
 		3,
 	)
 	if err != nil {

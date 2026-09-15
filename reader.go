@@ -7,8 +7,6 @@ import (
 	"io"
 	"strings"
 	"unicode"
-
-	"github.com/dkotik/kidwords/dictionary"
 )
 
 func NewReader(r io.Reader, withOptions ...ReaderOption) (*Reader, error) {
@@ -25,7 +23,7 @@ func NewReader(r io.Reader, withOptions ...ReaderOption) (*Reader, error) {
 	}
 
 	if o.dictionary == nil {
-		o.dictionary = (&dictionary.EnglishFourLetterNouns).Reverse()
+		o.dictionary = (&EnglishFourLetterNouns).Reverse()
 	}
 
 	return &Reader{

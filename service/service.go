@@ -12,7 +12,6 @@ import (
 
 	"github.com/dkotik/htadaptor"
 	"github.com/dkotik/kidwords"
-	"github.com/dkotik/kidwords/dictionary"
 	"github.com/dkotik/kidwords/service/secret"
 	"github.com/nicksnyder/go-i18n/v2/i18n"
 	"golang.org/x/text/language"
@@ -84,8 +83,8 @@ func New(
 	}
 	if o.Encoder == nil {
 		o.Encoder, err = kidwords.NewEncoder(
-			dictionary.EnglishFourLetterNouns,
-			dictionary.EnglishFourLetterVerbs,
+			kidwords.EnglishFourLetterNouns,
+			kidwords.EnglishFourLetterVerbs,
 			3,
 		)
 		if err != nil {

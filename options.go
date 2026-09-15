@@ -2,16 +2,13 @@ package kidwords
 
 import (
 	"errors"
-	"fmt"
-
-	"github.com/dkotik/kidwords/dictionary"
 )
 
 type SeparatorFunc func() []byte
 
 type writerOptions struct {
 	separator  SeparatorFunc
-	dictionary *dictionary.Dictionary
+	dictionary *Dictionary
 }
 
 type WriterOption interface {
@@ -32,7 +29,7 @@ type Option interface {
 }
 
 type dictionaryOption struct {
-	dictionary *dictionary.Dictionary
+	dictionary *Dictionary
 }
 
 func (d *dictionaryOption) validate() error {
@@ -64,32 +61,8 @@ func (d *dictionaryOption) applyReaderOption(o *readerOptions) error {
 	return nil
 }
 
-func WithDictionary(d *dictionary.Dictionary) Option {
+func WithDictionary(d *Dictionary) Option {
 	return &dictionaryOption{dictionary: d}
-}
-
-type dictionaryFileOption string
-
-func (d dictionaryFileOption) applyWriterOption(o *writerOptions) error {
-	if d == "" {
-		return errors.New("cannot use an empty dictionary file path")
-	}
-	dictionary, err := dictionary.LoadFile(string(d))
-	if err != nil {
-		return fmt.Errorf("cannot load dictionary %q: %w", d, err)
-	}
-	return (&dictionaryOption{dictionary: &dictionary}).applyWriterOption(o)
-}
-
-func (d dictionaryFileOption) applyReaderOption(o *readerOptions) error {
-	if d == "" {
-		return errors.New("cannot use an empty dictionary file path")
-	}
-	dictionary, err := dictionary.LoadFile(string(d))
-	if err != nil {
-		return fmt.Errorf("cannot load dictionary %q: %w", d, err)
-	}
-	return (&dictionaryOption{dictionary: &dictionary}).applyReaderOption(o)
 }
 
 type separatorOption SeparatorFunc

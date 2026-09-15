@@ -37,10 +37,6 @@ import (
 	"strings"
 )
 
-//go:generate go run dictionary/generate.go --source internal/wordlist/en/nouns.txt --destination dictionary/enNouns.gen.go --variable EnglishFourLetterNouns
-//go:generate go run dictionary/generate.go --source internal/wordlist/en/verbs.txt --destination dictionary/enVerbs.gen.go --variable EnglishFourLetterVerbs
-//go:generate go test . -update
-
 type Codec interface {
 	EncodeBytes([]byte) []byte
 	DecodeBytes([]byte) ([]byte, error)

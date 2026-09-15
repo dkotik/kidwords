@@ -5,15 +5,13 @@ import (
 	"io"
 	"strings"
 	"testing"
-
-	"github.com/dkotik/kidwords/dictionary"
 )
 
 func TestReader(t *testing.T) {
 	r, err := NewReader(
 		strings.NewReader(`idea...half...icon
       idea...crow...;grid!`),
-		WithDictionary(&dictionary.EnglishFourLetterNouns),
+		WithDictionary(&EnglishFourLetterNouns),
 	)
 	if err != nil {
 		t.Fatal(err)

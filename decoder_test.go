@@ -4,8 +4,6 @@ import (
 	"bytes"
 	"regexp"
 	"testing"
-
-	"github.com/dkotik/kidwords/dictionary"
 )
 
 func TestDecoder(t *testing.T) {
@@ -19,8 +17,8 @@ func TestDecoder(t *testing.T) {
 	}
 
 	encoder, err := NewEncoder(
-		dictionary.EnglishFourLetterNouns,
-		dictionary.EnglishFourLetterVerbs,
+		EnglishFourLetterNouns,
+		EnglishFourLetterVerbs,
 		3,
 	)
 	if err != nil {
@@ -36,8 +34,8 @@ func TestDecoder(t *testing.T) {
 	}
 
 	decoder := NewDecoder(
-		dictionary.EnglishFourLetterNouns,
-		dictionary.EnglishFourLetterVerbs,
+		EnglishFourLetterNouns,
+		EnglishFourLetterVerbs,
 	)
 
 	// axe every line that starts with to destroy three shards

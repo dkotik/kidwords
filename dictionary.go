@@ -1,15 +1,9 @@
-/*
-Package dictionary defines arrays of 256 words used for KidWords encoding.
-*/
-package dictionary
+package kidwords
 
 import (
 	"errors"
 	"fmt"
-	"io"
-	"os"
 	"strings"
-	"text/scanner"
 )
 
 // Dictionary holds 256 words, each corresponding to a byte value.
@@ -44,39 +38,4 @@ func (d *Dictionary) Validate() error {
 		m[w] = struct{}{}
 	}
 	return nil
-}
-
-// Load captures the first 256 words of a dictionary from an [io.Reader]. Lines starting with `//` are ignored.
-func Load(r io.Reader) (d Dictionary, err error) {
-	s := &scanner.Scanner{}
-	s.Init(r)
-	s.Error = func(s *scanner.Scanner, msg string) {
-		err = errors.New(msg)
-	}
-
-	cursor := 0
-	for tok := s.Scan(); tok != scanner.EOF; tok = s.Scan() {
-		word := strings.TrimSpace(s.TokenText())
-		if strings.HasPrefix(word, "//") {
-			continue // comment
-		}
-		if err != nil {
-			return
-		}
-		d[cursor] = word
-		cursor++
-		if cursor > 255 {
-			break
-		}
-	}
-	return d, nil
-}
-
-func LoadFile(p string) (d Dictionary, err error) {
-	handle, err := os.Open(p)
-	if err != nil {
-		return
-	}
-	defer handle.Close()
-	return Load(handle)
 }

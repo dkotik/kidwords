@@ -3,14 +3,12 @@ package kidwords
 import (
 	"fmt"
 	"io"
-
-	"github.com/dkotik/kidwords/dictionary"
 )
 
 type Writer struct {
 	io.Writer
 	separator  SeparatorFunc
-	dictionary *dictionary.Dictionary
+	dictionary *Dictionary
 }
 
 func NewWriter(out io.Writer, withOptions ...WriterOption) (*Writer, error) {
@@ -27,7 +25,7 @@ func NewWriter(out io.Writer, withOptions ...WriterOption) (*Writer, error) {
 	}
 
 	if o.dictionary == nil {
-		o.dictionary = &dictionary.EnglishFourLetterNouns
+		o.dictionary = &EnglishFourLetterNouns
 	}
 	if o.separator == nil {
 		o.separator = func() []byte {

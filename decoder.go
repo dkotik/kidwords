@@ -6,7 +6,6 @@ import (
 	"strconv"
 	"unicode/utf8"
 
-	"github.com/dkotik/kidwords/dictionary"
 	"github.com/dkotik/kidwords/internal/shamir"
 )
 
@@ -19,7 +18,7 @@ type Decoder interface {
 	Decode([]byte) ([]byte, error)
 }
 
-func NewDecoder(nouns, verbs dictionary.Dictionary) Decoder {
+func NewDecoder(nouns, verbs Dictionary) Decoder {
 	return &decoder{
 		Nouns: nouns.Reverse(),
 		Verbs: verbs.Reverse(),

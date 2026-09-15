@@ -3,15 +3,13 @@ package kidwords
 import (
 	"bytes"
 	"testing"
-
-	"github.com/dkotik/kidwords/dictionary"
 )
 
 func TestWriter(t *testing.T) {
 	b := &bytes.Buffer{}
 	w, err := NewWriter(
 		b,
-		WithDictionary(&dictionary.EnglishFourLetterNouns),
+		WithDictionary(&EnglishFourLetterNouns),
 		WithSeparator(func() []byte {
 			return []byte(`...`)
 		}),

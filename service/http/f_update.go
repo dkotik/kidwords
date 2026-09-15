@@ -28,15 +28,6 @@ func (f *formUpdateKey) Description() (string, error) {
 	})
 }
 
-func (f *formUpdateKey) NameFieldLabel() (string, error) {
-	return f.lc.Localize(&i18n.LocalizeConfig{
-		DefaultMessage: &i18n.Message{
-			ID:    "KidwordsNameFieldLabel",
-			Other: "Name",
-		},
-	})
-}
-
 func (f *formUpdateKey) UpdateButtonLabel() (string, error) {
 	return f.lc.Localize(&i18n.LocalizeConfig{
 		DefaultMessage: &i18n.Message{
