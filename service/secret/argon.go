@@ -59,7 +59,7 @@ func NewCustomArgonHash(
 		MemoryCost:      memoryCost,
 		ParallelThreads: parallelThreads,
 		Salt:            salt.Bytes(),
-		Secret: argon2.Key(
+		Secret: argon2.IDKey(
 			key,
 			salt.Bytes(),
 			timeCost,
