@@ -2,6 +2,7 @@ package kidwords
 
 import (
 	"bytes"
+	"fmt"
 	"io"
 	"math"
 	"strings"
@@ -14,6 +15,27 @@ type Shard struct {
 	Index    uint8
 	Data     []byte
 	Checksum []byte
+}
+
+func NewShard(index uint8, nouns, verbs []byte) (s Shard, err error) {
+	if len(verbs) != 4 {
+		return s, fmt.Errorf("share %d: expected 4 verbs, got %d", index, len(verbs))
+	}
+	if !IsValid(nouns, verbs) {
+		return s, fmt.Errorf("share %d: invalid checksum", index)
+	}
+	s.Index = index
+	s.Data = nouns
+	s.Checksum = verbs
+	return s, nil
+}
+
+func Combine(ss []Shard) ([]byte, error) {
+	shares := make([][]byte, len(ss))
+	for i, shard := range ss {
+		shares[i] = shard.Data
+	}
+	return shamir.Combine(shares)
 }
 
 type Shards []string

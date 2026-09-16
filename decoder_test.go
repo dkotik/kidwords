@@ -45,10 +45,16 @@ func TestDecoder(t *testing.T) {
 	// fmt.Println("===")
 	// t.Fail()
 
-	decoded, err := decoder.Decode(axed)
+	shards, err := decoder.Decode(string(axed))
 	if err != nil {
 		t.Fatal(err)
 	}
+
+	decoded, err := Combine(shards)
+	if err != nil {
+		t.Fatal(err)
+	}
+
 	if string(decoded) != string(secretBytes) {
 		t.Log("original:", string(secretBytes))
 		t.Log("decoded:", string(decoded))

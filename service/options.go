@@ -14,29 +14,16 @@ const (
 )
 
 type options struct {
-	Localizer Localizer
-	// IdentifierGenerator IdentifierGenerator
+	Localizer     Localizer
 	KeyCountLimit uint8
 	KeyLength     uint8
 	ShardCount    uint8
 	QuorumCount   uint8
 	Encoder       kidwords.Encoder
+	Decoder       kidwords.Decoder
 }
 
 type Option func(*options) error
-
-// func WithIdentifierGenerator(generator IdentifierGenerator) Option {
-// 	return func(o *options) error {
-// 		if generator == nil {
-// 			return errors.New("nil identifier generator")
-// 		}
-// 		if o.IdentifierGenerator != nil {
-// 			return errors.New("identifier generator already set")
-// 		}
-// 		o.IdentifierGenerator = generator
-// 		return nil
-// 	}
-// }
 
 func WithLocalizer(localizer Localizer) Option {
 	return func(o *options) error {
@@ -110,6 +97,19 @@ func WithEncoder(encoder kidwords.Encoder) Option {
 			return errors.New("encoder already set")
 		}
 		o.Encoder = encoder
+		return nil
+	}
+}
+
+func WithDecoder(decoder kidwords.Decoder) Option {
+	return func(o *options) error {
+		if decoder == nil {
+			return errors.New("nil decoder")
+		}
+		if o.Decoder != nil {
+			return errors.New("decoder already set")
+		}
+		o.Decoder = decoder
 		return nil
 	}
 }

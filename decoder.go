@@ -5,8 +5,6 @@ import (
 	"fmt"
 	"strconv"
 	"unicode/utf8"
-
-	"github.com/dkotik/kidwords/internal/shamir"
 )
 
 type decoder struct {
@@ -15,7 +13,7 @@ type decoder struct {
 }
 
 type Decoder interface {
-	Decode([]byte) ([]byte, error)
+	Decode(string) ([]Shard, error)
 }
 
 func NewDecoder(nouns, verbs Dictionary) Decoder {
@@ -23,16 +21,6 @@ func NewDecoder(nouns, verbs Dictionary) Decoder {
 		Nouns: nouns.Reverse(),
 		Verbs: verbs.Reverse(),
 	}
-}
-
-func (d *decoder) buildShard(index int, nouns, verbs []byte) (_ []byte, err error) {
-	if len(verbs) != 4 {
-		return nil, fmt.Errorf("share %d: expected 4 verbs, got %d", index, len(verbs))
-	}
-	if !IsValid(nouns, verbs) {
-		return nil, fmt.Errorf("share %d: invalid checksum", index)
-	}
-	return nouns, nil
 }
 
 type tokenKind uint8
@@ -43,7 +31,7 @@ const (
 	tokenIndex
 )
 
-func (d *decoder) Decode(data []byte) (b []byte, err error) {
+func (d *decoder) Decode(data string) (ss []Shard, err error) {
 	var (
 		n            int
 		index        int
@@ -124,25 +112,19 @@ func (d *decoder) Decode(data []byte) (b []byte, err error) {
 		return nil, fmt.Errorf("no shards found")
 	}
 
-	shares := make([][]byte, 0, len(nouns))
+	ss = make([]Shard, 0, len(nouns))
 	for index, ns := range nouns {
 		vs, ok := verbs[index]
 		if !ok {
 			continue
 		}
-		share, err := d.buildShard(index, ns, vs)
+		shard, err := NewShard(uint8(index), ns, vs)
 		if err != nil {
 			shardErrors = append(shardErrors, err)
 			continue
 		}
 		// fmt.Println(index, len(share))
-		shares = append(shares, share)
+		ss = append(ss, shard)
 	}
-
-	secret, err := shamir.Combine(shares)
-	if err != nil {
-		shardErrors = append(shardErrors, err)
-		return nil, errors.Join(shardErrors...)
-	}
-	return secret, nil
+	return ss, errors.Join(shardErrors...)
 }

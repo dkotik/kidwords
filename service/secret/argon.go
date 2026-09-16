@@ -79,8 +79,9 @@ func (a *Argon2Hash) Match(key []byte) (bool, error) {
 			a.TimeCost,
 			a.MemoryCost,
 			a.ParallelThreads,
-			DefaultArgonKeyLength)
-		return bytes.Compare(hash, a.Secret) == 0, nil
+			DefaultArgonKeyLength,
+		)
+		return bytes.Equal(hash, a.Secret), nil
 	case "argon2id":
 		hash := argon2.IDKey(
 			key,
@@ -88,8 +89,9 @@ func (a *Argon2Hash) Match(key []byte) (bool, error) {
 			a.TimeCost,
 			a.MemoryCost,
 			a.ParallelThreads,
-			DefaultArgonKeyLength)
-		return bytes.Compare(hash, a.Secret) == 0, nil
+			DefaultArgonKeyLength,
+		)
+		return bytes.Equal(hash, a.Secret), nil
 	default:
 		return false, fmt.Errorf("hash type %q is not supported", a.Type)
 	}

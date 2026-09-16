@@ -45,6 +45,7 @@ type Service struct {
 	shardCount    int
 	quorumCount   int
 	encoder       kidwords.Encoder
+	decoder       kidwords.Decoder
 }
 
 func New(
@@ -91,6 +92,12 @@ func New(
 			return nil, fmt.Errorf("failed to create default encoder: %w", err)
 		}
 	}
+	if o.Decoder == nil {
+		o.Decoder = kidwords.NewDecoder(
+			kidwords.EnglishFourLetterNouns,
+			kidwords.EnglishFourLetterVerbs,
+		)
+	}
 
 	return &Service{
 		authenticator: authenticator,
@@ -101,6 +108,7 @@ func New(
 		shardCount:    int(o.ShardCount),
 		quorumCount:   int(o.QuorumCount),
 		encoder:       o.Encoder,
+		decoder:       o.Decoder,
 	}, nil
 }
 

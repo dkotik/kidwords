@@ -10,6 +10,10 @@ short:
 	@#output=$$(go test -short -run=^TestEncode$$) || echo "$$output" | grep -Ev "^(ok|\\?)"
 	@output=$$(go test -short ./...) || echo "$$output" | grep -Ev "^(ok|\\?)"
 	@date +"[ %T ]"
+live:
+	@clear
+	@date +"[ %T at http://localhost:8080/ ]"
+	@output=$$(go test ./service/http -livePort=8080) || echo "$$output"
 generate:
 	@clear
 	@output=$$(go generate ./...) || echo "$$output"
