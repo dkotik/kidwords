@@ -1,7 +1,7 @@
 version: 2
+dist: ../../dist
 before:
   hooks:
-    - go generate ./...
     - go test ./...
 builds:
   - main: .

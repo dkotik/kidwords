@@ -8,20 +8,6 @@ import (
 	"testing"
 )
 
-func TestSplit(t *testing.T) {
-	shards, err := Split("somethingElse", 12, 8)
-	if err != nil {
-		t.Fatal(err)
-	}
-	if _, err = shards.Grid(6, 18).Write(io.Discard); err != nil {
-		t.Fatal(err)
-	}
-	if err = shards.WriteHTML(io.Discard, 3); err != nil {
-		t.Fatal(err)
-	}
-	// t.Fatal("show")
-}
-
 func compress(r io.Reader) ([]byte, error) {
 	b := &bytes.Buffer{}
 	zr, err := gzip.NewWriterLevel(b, gzip.BestCompression)

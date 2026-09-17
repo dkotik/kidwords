@@ -107,25 +107,25 @@ func (s Shards) String() string {
 	return b.String()
 }
 
-func Split(
-	key string,
-	total,
-	quorum int,
-	withOptions ...WriterOption,
-) (shards Shards, err error) {
-	raw, err := shamir.Split([]byte(key), total, quorum)
-	if err != nil {
-		return nil, err
-	}
-	shards = make([]string, len(raw))
+// func Split(
+// 	key string,
+// 	total,
+// 	quorum int,
+// 	withOptions ...WriterOption,
+// ) (shards Shards, err error) {
+// 	raw, err := shamir.Split([]byte(key), total, quorum)
+// 	if err != nil {
+// 		return nil, err
+// 	}
+// 	shards = make([]string, len(raw))
 
-	for i, shard := range raw {
-		encoded, err := FromBytes(shard, withOptions...)
-		if err != nil {
-			return nil, err
-		}
-		shards[i] = encoded
-	}
+// 	for i, shard := range raw {
+// 		encoded, err := FromBytes(shard, withOptions...)
+// 		if err != nil {
+// 			return nil, err
+// 		}
+// 		shards[i] = encoded
+// 	}
 
-	return shards, nil
-}
+// 	return shards, nil
+// }
