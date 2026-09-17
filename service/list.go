@@ -58,12 +58,13 @@ func (v keyListView) Description() (string, error) {
 	})
 }
 
-func (v keyListView) CreateKeyTitle() (string, error) {
-	return "Create Key", nil
-}
-
-func (f keyListView) DeleteButtonLabel() (string, error) {
-	return "Delete", nil
+func (v keyListView) LabelCreate() (string, error) {
+	return v.lc.Localize(&i18n.LocalizeConfig{
+		DefaultMessage: &i18n.Message{
+			ID:    "KidwordsLabelCreate",
+			Other: "Create New Paper Key",
+		},
+	})
 }
 
 func (s *Service) List(ctx context.Context) (view keyListView, err error) {

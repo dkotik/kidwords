@@ -18,3 +18,15 @@ type Repository interface {
 	BeginTransaction(context.Context) (Repository, Transaction, error)
 	WithTransaction(context.Context, Transaction) (Repository, error)
 }
+
+type User interface {
+	GetID() string
+}
+
+type UserRepository interface {
+	RetrieveUserByName(context.Context, string) (User, error)
+	RetrieveUserByEmailAddress(context.Context, string) (User, error)
+
+	BeginTransaction(context.Context) (Repository, Transaction, error)
+	WithTransaction(context.Context, Transaction) (Repository, error)
+}

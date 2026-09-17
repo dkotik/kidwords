@@ -62,6 +62,15 @@ func (f *form) LabelClose() (string, error) {
 	})
 }
 
+func (f *form) LabelCreate() (string, error) {
+	return f.lc.Localize(&i18n.LocalizeConfig{
+		DefaultMessage: &i18n.Message{
+			ID:    "KidwordsLabelCreate",
+			Other: "Create New Paper Key",
+		},
+	})
+}
+
 func (f *form) LabelDelete() (string, error) {
 	return f.lc.Localize(&i18n.LocalizeConfig{
 		DefaultMessage: &i18n.Message{

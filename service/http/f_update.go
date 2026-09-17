@@ -14,7 +14,7 @@ func (f *formUpdateKey) Title() (string, error) {
 	return f.lc.Localize(&i18n.LocalizeConfig{
 		DefaultMessage: &i18n.Message{
 			ID:    "KidwordsUpdateFormTitle",
-			Other: "Change Paper Key Name",
+			Other: "Update Paper Key",
 		},
 	})
 }
@@ -23,7 +23,7 @@ func (f *formUpdateKey) Description() (string, error) {
 	return f.lc.Localize(&i18n.LocalizeConfig{
 		DefaultMessage: &i18n.Message{
 			ID:    "KidwordsUpdateFormDescription",
-			Other: "Change the name of this paper key.",
+			Other: "Update paper key.",
 		},
 	})
 }

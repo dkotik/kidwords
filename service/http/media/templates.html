@@ -76,7 +76,7 @@
   {{ if .Secret }}
   <table class="table is-striped is-bordered is-fullwidth is-size-6">
     <thead>
-      <th colspan="8" class="is-info">
+      <th colspan="12" class="is-info">
         {{ .Name }}
       </th>
     </thead>
@@ -84,10 +84,12 @@
     {{- range .Secret.Secret -}}
       <tr>
         {{- range . -}}
+          <td class="has-text-right is-family-monospace">
+            <strong>{{- .Index -}}</strong>
+          </td>
           <td><nobr class="is-family-monospace">
-              <strong>{{- .Index -}}</strong>
               {{- range .Words -}}
-                &nbsp;{{ . -}}
+                {{ . }}
               {{- end -}}
            </nobr></td>
         {{- end -}}
@@ -96,7 +98,7 @@
     </tbody>
     <tfoot>
       <tr>
-        <td colspan="8">
+        <td colspan="12">
           <p class="is-size-7 help">
             {{ .Description }}
           </p>
@@ -182,7 +184,7 @@
 {{ define `update` }}
 <h1 class="title">{{ .Title }}</h1>
 <section class="section">
-  <p>{{ .Description }}</p>
+  <p>{{ .LabelAddCustomNameHelp }}</p>
 </section>
 <section class="section">
 <form id="update" action="?id={{ .ID }}" method="post" class="form">
@@ -191,9 +193,6 @@
       <input type="hidden" name="id" value="{{ .ID }}" />
       <label class="label" for="name">{{ .NameFieldLabel }} *</label>
       <input class="input" name="name" value="{{ .Name }}" placeholder="..." required />
-      <p class="help">
-        {{- .LabelAddCustomNameHelp -}}
-      </p>
     </div>
   </fieldset>
 </form>
@@ -205,10 +204,14 @@
   </fieldset>
 </form>
 <br />
-<div class="buttons is-right">
-  <a href="./" class="button is-ghost">Cancel</a>
-  <button class="button is-ghost is-danger" form="delete">Delete</button>
-  <button class="button is-primary" form="update">{{ .UpdateButtonLabel }}</button>
+<div class="buttons level">
+  <div class="level-left">
+    <a href="./" class="button is-light level-item">Cancel</a>
+    <button class="button is-light is-danger level-item" form="delete">Delete</button>
+  </div>
+  <div class="level-right">
+    <button class="button is-primary level-item" form="update">{{ .UpdateButtonLabel }}</button>
+  </div>
 </div>
 </section>
 {{ end }}
@@ -220,11 +223,13 @@
     </section>
     <section class="section">
       <form action="" method="post" class="form p-4">
-        <fieldset>
-          <div class="field has-text-centered">
+        <fieldset class="level">
+          <div class="level-left">
             <input type="hidden" name="id" value="{{ .ID }}" />
-            <a href="./" class="button">{{ .LabelCancel }}</a>
-            <input class="button is-danger" type="submit" value="{{ .LabelDelete }}" />
+            <a href="./" class="button is-light level-item">{{ .LabelCancel }}</a>
+          </div>
+          <div class="level-right">
+            <input class="button is-danger level-item" type="submit" value="{{ .LabelDelete }}" />
           </div>
         </fieldset>
       </form>
@@ -232,15 +237,16 @@
 {{ end }}
 
 {{ define `list` }}
-  <h1 class="title">{{ .Title }}</h1>
-  <section class="section">
-    <p>{{ .Description }}</p>
-  </section>
-  <section class="section content">
-  <ul>
+  <section class="panel">
+    <h1 class="panel-heading">{{ .Title }}</h1>
+    <div class="panel-block">
+      <p>{{ .Description }}</p>
+    </div>
     {{- range .PaperKeys -}}
-    <li>
-      <a href="update?id={{ .ID }}">
+      <a class="panel-block" href="update?id={{ .ID }}">
+        <span class="panel-icon">
+          <strong aria-hidden="true">🔑</strong>
+        </span>
         {{- .Name -}}
         {{- if .LastAcceptedAtFull -}}
         &nbsp;(used)
@@ -248,11 +254,10 @@
           &nbsp;<time datetime="{{ .CreatedAtFull }}">({{- .CreatedAt -}})</time>
         {{- end -}}
       </a>
-    </li>
+    </div>
     {{- end -}}
-  </ul>
-  </section>
-  <section class="section has-text-centered mt-4">
-    <a href="create" class="button">{{ .CreateKeyTitle }}</a>
+    <div class="panel-block is-justify-content-center">
+      <a href="create" class="button">⊕ {{ .LabelCreate }}</a>
+    </div>
   </section>
 {{ end }}

@@ -80,6 +80,7 @@ func New(s *service.Service, withOptions ...Option) (_ http.Handler, err error) 
 			if err != nil {
 				form.Error = err.Error()
 			}
+			form.Name = form.Secret.Name
 			return form, nil
 		},
 		htadaptor.WithTemplate(createPageTemplate),
