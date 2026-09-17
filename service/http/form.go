@@ -79,3 +79,21 @@ func (f *form) NameFieldLabel() (string, error) {
 		},
 	})
 }
+
+func (f *form) LabelAddCustomName() (string, error) {
+	return f.lc.Localize(&i18n.LocalizeConfig{
+		DefaultMessage: &i18n.Message{
+			ID:    "KidwordsLabelAddCustomName",
+			Other: "Add a Custom Name",
+		},
+	})
+}
+
+func (f *form) LabelAddCustomNameHelp() (string, error) {
+	return f.lc.Localize(&i18n.LocalizeConfig{
+		DefaultMessage: &i18n.Message{
+			ID:    "KidwordsLabelAddCustomNameHelp",
+			Other: "Be careful not to betray the exact physical location where the paper key might be stored or which persons might have access to it or knowledge of it.",
+		},
+	})
+}

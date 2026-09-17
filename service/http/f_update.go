@@ -23,7 +23,7 @@ func (f *formUpdateKey) Description() (string, error) {
 	return f.lc.Localize(&i18n.LocalizeConfig{
 		DefaultMessage: &i18n.Message{
 			ID:    "KidwordsUpdateFormDescription",
-			Other: "Change the name of this paper key. Be careful not to betray the exact physical location where it might be stored or which persons might have access to it or knowledge of it.",
+			Other: "Change the name of this paper key.",
 		},
 	})
 }

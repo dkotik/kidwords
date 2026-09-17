@@ -115,40 +115,63 @@
   </div>
   {{- else -}}
   <h1 class="title">{{ .Title }}</h1>
-  <section class="section">
+  <section class="content">
     <p>{{ .Description }}</p>
   </section>
-  <section class="section">
-    <form action="create" method="post" class="form p-4">
-      <fieldset>
-        <div class="field">
-          <label class="label" for="name">{{ .NameFieldLabel }} *</label>
-          <input class="input" name="name" value="{{ .Name }}" placeholder="..." required />
+  <section>
+    <form action="create" method="post" class="form">
+      <fieldset class="panel">
+        <div class="field panel-block">
+            <div class="control">
+              <label class="label is-inline-block" for="name">{{ .LabelAddCustomName }}</label>
+              <input class="input" name="name" value="{{ .Name }}" placeholder="..." />
+              <p class="help">
+                {{ .LabelAddCustomNameHelp }}
+              </p>
+            </div>
         </div>
-        <div class="field">
-          <label class="label" for="split">{{ .NameFieldLabel }} *</label>
-          <div class="radios">
-            <label class="radio">
-              <input type="radio"name="split" value="1"{{ if eq .Split 1 }} checked{{end}} />
-              One Page
-            </label>
-            <label class="radio">
-              <input type="radio" name="split" value="2"{{ if eq .Split 2 }} checked{{end}} />
-              Two Pages
-            </label>
-            <label class="radio">
-              <input type="radio" name="split" value="3"{{ if eq .Split 3 }} checked{{end}} />
-              Three Pages
-            </label>
-            <label class="radio">
-              <input type="radio" name="split" value="4"{{ if eq .Split 4 }} checked{{end}} />
-              Four Pages
-            </label>
+        <div class="field panel-block">
+          <div class="control">
+              <label class="label is-inline-block" for="split">{{ .LabelSplit }}</label>
+            <div class="radios level">
+              <label class="level-item button is-outline m-1">
+                <input type="radio" class="mr-2" name="split" value="1"{{ if eq .Split 1 }} checked{{end}} />
+                1
+              </label>
+              <label class="level-item button is-outline m-1">
+                <input type="radio" class="mr-2" name="split" value="2"{{ if eq .Split 2 }} checked{{end}} />
+                2
+              </label>
+              <label class="level-item button is-outline m-1">
+                <input type="radio" class="mr-2" name="split" value="3"{{ if eq .Split 3 }} checked{{end}} />
+                3
+              </label>
+              <label class="level-item button is-outline m-1">
+                <input type="radio" class="mr-2" name="split" value="4"{{ if eq .Split 4 }} checked{{end}} />
+                4
+              </label>
+              <label class="level-item button is-outline m-1">
+                <input type="radio" class="mr-2" name="split" value="6"{{ if eq .Split 6 }} checked{{end}} />
+                6
+              </label>
+            </div>
+            <p class="help">
+              {{- .LabelSplitHelp -}}
+            </p>
           </div>
         </div>
-        <div class="field has-text-centered">
-          <a href="./" class="button">{{ .LabelCancel }}</a>
-          <input class="button is-danger" type="submit" value="{{ .LabelCreate }}" />
+        {{- with .Error -}}
+        <div class="field panel-block">
+          <p class="has-text-danger">
+            {{- . -}}
+          </p>
+        </div>
+        {{- end -}}
+      </fieldset>
+      <fieldset>
+        <div class="field has-text-right">
+          <a href="./" class="button is-ghost">{{ .LabelCancel }}</a>
+          <input class="button is-primary" type="submit" value="{{ .LabelCreate }}" />
         </div>
       </fieldset>
     </form>
@@ -168,6 +191,9 @@
       <input type="hidden" name="id" value="{{ .ID }}" />
       <label class="label" for="name">{{ .NameFieldLabel }} *</label>
       <input class="input" name="name" value="{{ .Name }}" placeholder="..." required />
+      <p class="help">
+        {{- .LabelAddCustomNameHelp -}}
+      </p>
     </div>
   </fieldset>
 </form>

@@ -10,8 +10,8 @@ import (
 	"uuid"
 )
 
-//go:generate go run generate.go --source wordlist/en/nouns.txt --destination ../dictionary_nouns.gen.go --variable EnglishFourLetterNouns
-//go:generate go run generate.go --source wordlist/en/verbs.txt --destination ../dictionary_verbs.gen.go --variable EnglishFourLetterVerbs
+//go:generate go run generate.go --source wordlist/en/nouns.txt --destination ../kid_nouns.gen.go --variable EnglishFourLetterNouns
+//go:generate go run generate.go --source wordlist/en/verbs.txt --destination ../kid_verbs.gen.go --variable EnglishFourLetterVerbs
 
 func NewDetermenisticRandomReader(seed [32]byte) io.Reader {
 	return rand.NewChaCha8(seed)

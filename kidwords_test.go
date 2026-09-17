@@ -1,36 +1,28 @@
 package kidwords
 
-// func TestIntTransformations(t *testing.T) {
-// 	cases := []int64{0, 9, 16, 32, 999999, 38729387428974, 2374761653249823, 88999999}
-// 	for _, i := range cases {
-// 		t.Run(fmt.Sprintf("transforming integer: %d", i), func(t *testing.T) {
-// 			b := &bytes.Buffer{}
-// 			if err := WriteInt(b, i); err != nil {
-// 				t.Fatal(err)
-// 			}
-// 			legitWords(t, b.String())
-// 			t.Log("words:", b.String())
-//
-// 			j, err := ReadInt(bytes.NewReader(b.Bytes()))
-// 			if err != nil {
-// 				t.Fatal(err)
-// 			}
-// 			if j != i {
-// 				t.Fatalf("%d does not match %d", j, i)
-// 			}
-// 		})
-// 	}
-// }
+import "testing"
 
-// func ExampleFromBytes() {
-// 	fmt.Println(
-// 		FromBytes([]byte("marvel")),
-// 	)
-// 	// Output: hole gold hush item half hint <nil>
-// }
+func TestValidateDictionaries(t *testing.T) {
+	var err error
+	if err = EnglishFourLetterNouns.Validate(); err != nil {
+		t.Fatal("English four letter nouns contain a flaw:", err)
+	}
+	if err = EnglishFourLetterVerbs.Validate(); err != nil {
+		t.Fatal("English four letter verbs contain a flaw:", err)
+	}
 
-// func ExampleToBytes() {
-// 	b, err := ToBytes("  hole gold hush item half hint ")
-// 	fmt.Println(string(b), err)
-// 	// Output: marvel <nil>
-// }
+	known := make(map[string]string)
+	for _, word := range EnglishFourLetterNouns {
+		if dictionary, ok := known[word]; ok {
+			t.Fatalf("word %q is not unique (found in %s)", word, dictionary)
+		}
+		known[word] = "nouns"
+	}
+
+	for _, word := range EnglishFourLetterVerbs {
+		if dictionary, ok := known[word]; ok {
+			t.Fatalf("word %q is not unique (found in %s)", word, dictionary)
+		}
+		known[word] = "verbs"
+	}
+}

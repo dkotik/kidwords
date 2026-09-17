@@ -21,9 +21,9 @@ type Grid []Row
 
 func NewGrid(columns, rows int, from CellGenerator) (Grid, error) {
 	g := Grid(make([]Row, rows))
-	for i := 0; i < rows; i++ {
+	for i := range rows {
 		row := make([]*Cell, columns)
-		for j := 0; j < columns; j++ {
+		for j := range columns {
 			cell, err := from()
 			if err != nil {
 				return nil, err

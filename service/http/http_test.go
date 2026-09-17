@@ -142,8 +142,6 @@ func TestHandlers(t *testing.T) {
 		testKeyID = keys[0].ID
 	})
 
-	t.Skip("========== SKIP =========")
-
 	t.Run("updatePaperKey", func(t *testing.T) {
 		form := url.Values{}
 		form.Set("id", testKeyID)

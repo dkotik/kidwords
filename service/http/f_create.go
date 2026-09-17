@@ -20,9 +20,9 @@ func (r *CreateKeyRequest) Validate(ctx context.Context) error {
 
 func (r *CreateKeyRequest) ValidatePost(ctx context.Context) error {
 	r.Name = strings.TrimSpace(r.Name)
-	if r.Name == "" {
-		return errors.New("name is required")
-	}
+	// if r.Name == "" {
+	// 	return errors.New("name is required")
+	// }
 	if r.Split == 0 {
 		return errors.New("split value is required")
 	}
@@ -48,7 +48,7 @@ func (f *formCreateKey) Description() (string, error) {
 		return f.lc.Localize(&i18n.LocalizeConfig{
 			DefaultMessage: &i18n.Message{
 				ID:    "KidwordsCreateFormPrepareDescription",
-				Other: "PREPARE",
+				Other: "Create a new paper key. Store it in a safe place. You may use it in the future to gain access to your account in situations when all other methods of authentication are unavailable. System administrators may retain a copy of the new key for a short time as proof of account ownership even when deleted. If a hacker gains access to your account and replaces all existing paper keys with new ones, you may be able to regain access using an old key.",
 			},
 		})
 	}
@@ -69,6 +69,24 @@ func (f *formCreateKey) LabelCreate() (string, error) {
 		DefaultMessage: &i18n.Message{
 			ID:    "KidwordsLabelCreate",
 			Other: "Create New Paper Key",
+		},
+	})
+}
+
+func (f *formCreateKey) LabelSplit() (string, error) {
+	return f.lc.Localize(&i18n.LocalizeConfig{
+		DefaultMessage: &i18n.Message{
+			ID:    "KidwordsLabelSplit",
+			Other: "Split Into Multiple Printable Pages",
+		},
+	})
+}
+
+func (f *formCreateKey) LabelSplitHelp() (string, error) {
+	return f.lc.Localize(&i18n.LocalizeConfig{
+		DefaultMessage: &i18n.Message{
+			ID:    "KidwordsLabelSplitHelp",
+			Other: "If you split the key into multiple pages, store each page in a separate secure location or with a trusted third party.",
 		},
 	})
 }
