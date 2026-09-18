@@ -3,6 +3,7 @@ package service
 import (
 	"context"
 	"errors"
+	"fmt"
 	"log/slog"
 	"time"
 
@@ -31,7 +32,142 @@ func (err AuthenticationError) LogValue() slog.Value {
 	)
 }
 
-func (s *Service) Authenticate(
+func (s *Service) AuthenticateUserWithNameAndPassword(
+	ctx context.Context,
+	name string,
+	password string,
+) (err error) {
+	rp, tx, err := s.repository.BeginTransaction(ctx)
+	if err != nil {
+		return fmt.Errorf("unable to begin transaction: %w", err)
+	}
+	defer tx.Close(&err)
+	userRepository, ok := rp.(secret.UserRepository)
+	if !ok {
+		return AuthenticationError{
+			Cause: errors.ErrUnsupported,
+		}
+	}
+	user, err := userRepository.RetrieveUserByName(ctx, name)
+	if err != nil {
+		return AuthenticationError{
+			Cause: fmt.Errorf("unable to retrieve user: %w", err),
+		}
+	}
+	return s.AuthenticateUserWithPassword(ctx, userRepository, user, password)
+}
+
+func (s *Service) AuthenticateUserWithEmailAndPassword(
+	ctx context.Context,
+	email string,
+	password string,
+) (err error) {
+	rp, tx, err := s.repository.BeginTransaction(ctx)
+	if err != nil {
+		return fmt.Errorf("unable to begin transaction: %w", err)
+	}
+	defer tx.Close(&err)
+	userRepository, ok := rp.(secret.UserRepository)
+	if !ok {
+		return AuthenticationError{
+			Cause: errors.ErrUnsupported,
+		}
+	}
+	user, err := userRepository.RetrieveUserByEmailAddress(ctx, email)
+	if err != nil {
+		return AuthenticationError{
+			Cause: fmt.Errorf("unable to retrieve user: %w", err),
+		}
+	}
+	return s.AuthenticateUserWithPassword(ctx, userRepository, user, password)
+}
+
+func (s *Service) AuthenticateUserWithPassword(
+	ctx context.Context,
+	rp secret.UserRepository,
+	u User,
+	password string,
+) (err error) {
+	hash, err := secret.ParseArgonHash(u.GetPasswordHash())
+	if err != nil {
+		return AuthenticationError{
+			UserID: u.GetID(),
+			Cause:  err,
+		}
+	}
+	ok, err := hash.Match([]byte(password))
+	if err != nil {
+		return AuthenticationError{
+			UserID: u.GetID(),
+			Cause:  err,
+		}
+	}
+	if !ok {
+		return AuthenticationError{
+			UserID: u.GetID(),
+			Cause:  errors.New("password does not match"),
+		}
+	}
+	if err = rp.MarkUserAsActive(ctx, u.GetID()); err != nil {
+		return AuthenticationError{
+			UserID: u.GetID(),
+			Cause:  err,
+		}
+	}
+	return nil
+}
+
+func (s *Service) AuthenticateUserWithNameAndPaperKey(
+	ctx context.Context,
+	name string,
+	key string,
+) (err error) {
+	rp, tx, err := s.repository.BeginTransaction(ctx)
+	if err != nil {
+		return fmt.Errorf("unable to begin transaction: %w", err)
+	}
+	defer tx.Close(&err)
+	userRepository, ok := rp.(secret.UserRepository)
+	if !ok {
+		return AuthenticationError{
+			Cause: errors.ErrUnsupported,
+		}
+	}
+	user, err := userRepository.RetrieveUserByName(ctx, name)
+	if err != nil {
+		return AuthenticationError{
+			Cause: fmt.Errorf("unable to retrieve user: %w", err),
+		}
+	}
+	return s.AuthenticateUserWithPaperKey(ctx, rp, user.GetID(), key)
+}
+
+func (s *Service) AuthenticateUserWithEmailAndPaperKey(
+	ctx context.Context,
+	email string,
+	key string,
+) (err error) {
+	rp, tx, err := s.repository.BeginTransaction(ctx)
+	if err != nil {
+		return fmt.Errorf("unable to begin transaction: %w", err)
+	}
+	defer tx.Close(&err)
+	userRepository, ok := rp.(secret.UserRepository)
+	if !ok {
+		return AuthenticationError{
+			Cause: errors.ErrUnsupported,
+		}
+	}
+	user, err := userRepository.RetrieveUserByEmailAddress(ctx, email)
+	if err != nil {
+		return AuthenticationError{
+			Cause: fmt.Errorf("unable to retrieve user: %w", err),
+		}
+	}
+	return s.AuthenticateUserWithPaperKey(ctx, rp, user.GetID(), key)
+}
+
+func (s *Service) AuthenticateUserWithPaperKey(
 	ctx context.Context,
 	rp secret.Repository,
 	userID string,
@@ -42,11 +178,6 @@ func (s *Service) Authenticate(
 		return err
 	}
 
-	// rp, tx, err := s.repository.BeginTransaction(ctx)
-	// if err != nil {
-	// 	return fmt.Errorf("unable to begin transaction: %w", err)
-	// }
-	// defer tx.Close(&err)
 	keys, err := rp.List(ctx, userID)
 	if err != nil {
 		return err

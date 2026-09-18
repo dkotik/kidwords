@@ -30,6 +30,14 @@ func (u mockUser) GetName() string {
 	return "mockUserName"
 }
 
+func (u mockUser) GetEmail() string {
+	return "mockEmail@example.com"
+}
+
+func (u mockUser) GetPasswordHash() string {
+	return "????"
+}
+
 type mockAuthenticator struct{}
 
 func (m mockAuthenticator) Authenticate(context.Context) (service.User, error) {

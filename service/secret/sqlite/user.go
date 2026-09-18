@@ -52,7 +52,7 @@ func (u *User) GetPasswordHash() string {
 
 func (r *sqRepository) CreateUser(ctx context.Context, u *User) (err error) {
 	defer r.BindContext(ctx)()
-	if err = r.stmtCreate.Reset(); err != nil {
+	if err = r.stmtCreateUser.Reset(); err != nil {
 		return err
 	}
 	if u.ID == "" {
@@ -65,18 +65,18 @@ func (r *sqRepository) CreateUser(ctx context.Context, u *User) (err error) {
 		u.UpdatedAt = u.CreatedAt
 	}
 
-	r.stmtCreate.BindText(1, u.ID)
-	r.stmtCreate.BindText(2, u.Name)
-	r.stmtCreate.BindText(3, u.PasswordHash)
-	r.stmtCreate.BindText(4, u.Email)
-	r.stmtCreate.BindBool(5, u.EmailVerified)
-	r.stmtCreate.BindText(6, encodeTime(u.CreatedAt))
-	r.stmtCreate.BindText(7, encodeTime(u.UpdatedAt))
-	r.stmtCreate.BindText(8, encodeTime(u.ActiveAt))
+	r.stmtCreateUser.BindText(1, u.ID)
+	r.stmtCreateUser.BindText(2, u.Name)
+	r.stmtCreateUser.BindText(3, u.PasswordHash)
+	r.stmtCreateUser.BindText(4, u.Email)
+	r.stmtCreateUser.BindBool(5, u.EmailVerified)
+	r.stmtCreateUser.BindText(6, encodeTime(u.CreatedAt))
+	r.stmtCreateUser.BindText(7, encodeTime(u.UpdatedAt))
+	r.stmtCreateUser.BindText(8, encodeTime(u.ActiveAt))
 
 	ok := false
 	for {
-		ok, err = r.stmtCreate.Step()
+		ok, err = r.stmtCreateUser.Step()
 		if err != nil {
 			switch code := sqlite.ErrCode(err); code {
 			case lib.SQLITE_OK:
@@ -242,6 +242,19 @@ func (r *sqRepository) UpdateUser(ctx context.Context, u *User) (err error) {
 		if !ok {
 			break
 		}
+	}
+	return nil
+}
+
+func (r *sqRepository) MarkUserAsActive(ctx context.Context, ID string) (err error) {
+	defer r.BindContext(ctx)()
+	user, err := r.RetrieveUser(ctx, ID)
+	if err != nil {
+		return err
+	}
+	user.ActiveAt = time.Now()
+	if err := r.UpdateUser(ctx, user); err != nil {
+		return err
 	}
 	return nil
 }

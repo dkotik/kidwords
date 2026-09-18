@@ -143,5 +143,12 @@ func NewUserRepositoryTest(r UserRepository, u User) func(*testing.T) {
 			t.Fatalf("retrieved user ID does not match: expected %q, got %q", u.GetID(), retrieved.GetID())
 		}
 
+		retrieved, err = r.RetrieveUserByEmailAddress(ctx, u.GetEmail())
+		if err != nil {
+			t.Fatal(err)
+		}
+		if retrieved.GetID() != u.GetID() {
+			t.Fatalf("retrieved user ID does not match: expected %q, got %q", u.GetID(), retrieved.GetID())
+		}
 	}
 }

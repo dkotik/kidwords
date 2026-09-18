@@ -22,12 +22,14 @@ type Repository interface {
 type User interface {
 	GetID() string
 	GetName() string
+	GetEmail() string
 	GetPasswordHash() string
 }
 
 type UserRepository interface {
 	RetrieveUserByName(context.Context, string) (User, error)
 	RetrieveUserByEmailAddress(context.Context, string) (User, error)
+	MarkUserAsActive(context.Context, string) error
 
 	BeginTransaction(context.Context) (Repository, Transaction, error)
 	WithTransaction(context.Context, Transaction) (Repository, error)

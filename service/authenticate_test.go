@@ -31,7 +31,7 @@ func TestAuthentication(t *testing.T) {
 		}
 	}
 
-	err = service.Authenticate(
+	err = service.AuthenticateUserWithPaperKey(
 		ctx,
 		repository,
 		user.GetID(),

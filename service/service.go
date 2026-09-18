@@ -20,6 +20,8 @@ import (
 type User interface {
 	GetID() string
 	GetName() string
+	GetEmail() string
+	GetPasswordHash() string
 }
 
 type Authenticator interface {

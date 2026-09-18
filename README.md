@@ -13,17 +13,14 @@ Kid Words encoding increases key durability by splitting the key using [Shamir's
 <details>
   <summary>Planned features for <strong>v1.0.0</strong> release. ↩</summary>
 
-- [x] Use a separate 256-verb alphabet for the checksum bytes.
 - [ ] Add random password generator
 - [ ] Add PDF generation
 - [ ] Harden Shamir's Secret Sharing algorithm with `mod Prime`.
   - See https://en.wikipedia.org/wiki/Shamir%27s_secret_sharing
   - Another alternative implementation uses prime
   - Prime should be configurable?
-- [ ] Implement modular HTTP service using https://templ.guide, HTMX, and https://github.com/mazznoer/csscolorparser for OKLCH colors, Zombie SQLite C-Go-less driver
 - [ ] add Postgres SQL store
-- [ ] the last byte of each share is a random `uint8` that identifies that share.
-  That number could be used instead of the share index and would have 1 byte per shard.
+- [ ] the last byte of each share is a random `uint8` that identifies that share. That number could be used instead of the share index and would have 1 byte per shard.
 </details>
 
 ## Benefits
