@@ -38,12 +38,12 @@ func newKeyView(s secret.Secret) (v keyView) {
 	v.Name = s.Name
 	v.Type = s.Type
 	v.Fingerprint = base64.RawStdEncoding.EncodeToString(s.Fingerprint)
-	v.CreatedAt = s.CreatedAt.Format(time.RFC3339)
+	v.CreatedAt = s.CreatedAt.Format(shortDateFormat)
 	v.CreatedAtFull = s.CreatedAt.Format(time.RFC3339)
-	v.UpdatedAt = s.UpdatedAt.Format(time.RFC3339)
+	v.UpdatedAt = s.UpdatedAt.Format(shortDateFormat)
 	v.UpdatedAtFull = s.UpdatedAt.Format(time.RFC3339)
 	if !s.LastAcceptedAt.IsZero() {
-		v.LastAcceptedAt = s.LastAcceptedAt.Format(time.RFC3339)
+		v.LastAcceptedAt = s.LastAcceptedAt.Format(shortDateFormat)
 		v.LastAcceptedAtFull = s.LastAcceptedAt.Format(time.RFC3339)
 	}
 	return v

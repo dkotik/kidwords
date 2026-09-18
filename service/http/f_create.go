@@ -64,11 +64,38 @@ func (f *formCreateKey) Description() (string, error) {
 	})
 }
 
+func (f *formCreateKey) LabelCopy() (string, error) {
+	return f.lc.Localize(&i18n.LocalizeConfig{
+		DefaultMessage: &i18n.Message{
+			ID:    "KidwordsLabelCopy",
+			Other: "Copy",
+		},
+	})
+}
+
+func (f *formCreateKey) LabelPrint() (string, error) {
+	return f.lc.Localize(&i18n.LocalizeConfig{
+		DefaultMessage: &i18n.Message{
+			ID:    "KidwordsLabelPrint",
+			Other: "Print",
+		},
+	})
+}
+
 func (f *formCreateKey) LabelSplit() (string, error) {
 	return f.lc.Localize(&i18n.LocalizeConfig{
 		DefaultMessage: &i18n.Message{
 			ID:    "KidwordsLabelSplit",
 			Other: "Split Into Multiple Printable Pages",
+		},
+	})
+}
+
+func (f *formCreateKey) LabelCloseWarning() (string, error) {
+	return f.lc.Localize(&i18n.LocalizeConfig{
+		DefaultMessage: &i18n.Message{
+			ID:    "KidwordsLabelCloseWarning",
+			Other: "Are you ready to close the paper key? If you did not print or save it, you will never be able to use it.",
 		},
 	})
 }

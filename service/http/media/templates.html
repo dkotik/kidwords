@@ -23,6 +23,9 @@
       html {
         color-scheme: dark light;
         overscroll-behavior: none;
+        background-color: #f1f1f2;
+        /*height: 100%;*/
+        /*min-height: 100vh;*/
       }
 
       :root:has(#theme [value="light"]:checked) {
@@ -52,6 +55,10 @@
       body {
         font-family: system-ui;
         font-size: 1.5rem;
+      }
+
+      .panel {
+        background-color: white;
       }
 
       @media print {
@@ -108,11 +115,40 @@
   </table>
   <div class="level is-noprint">
     <div class="level-left">
-      <button class="button is-info is-light">Split</button>
+      <a id="close" href="./" class="level-item button is-danger">{{ .LabelClose }}</a>
     </div>
-    <a href="./" class="level-item button is-danger is-light">Close</a>
+    <script>
+      const paperKey = "
+        {{- range .Secret.Secret -}}
+        {{- range . -}}
+          {{- .Index }}{{ range .Words }}\t{{ . }}
+          {{- end -}}\t
+        {{- end -}}\n
+        {{- end -}}
+      ";
+
+      function copyTextToClipboard(text) {
+        navigator.clipboard.writeText(text)
+          .then(() => {
+            // console.log('Text successfully copied to clipboard');
+          })
+          .catch(err => {
+            console.error('Failed to copy text: ', err);
+          });
+      }
+
+      const closeButton = document.querySelector("#close");
+      closeButton.addEventListener("click", (e) => {
+        if (window.confirm("{{ .LabelCloseWarning }}")) {
+          // window.open("https://developer.mozilla.org/en-US/docs/Web/API/Window/open");
+        } else {
+          e.preventDefault()
+        }
+      });
+    </script>
+    <button class="button" onclick="copyTextToClipboard(paperKey)">{{ .LabelCopy }}</button>
     <div class="level-right">
-      <button class="button is-info is-light" onclick="window.print()">Print</button>
+      <button class="button" onclick="window.print()">{{ .LabelPrint }}</button>
     </div>
   </div>
   {{- else -}}
@@ -206,8 +242,8 @@
 <br />
 <div class="buttons level">
   <div class="level-left">
-    <a href="./" class="button is-light level-item">Cancel</a>
-    <button class="button is-light is-danger level-item" form="delete">Delete</button>
+    <a href="./" class="button is-light level-item">{{ .LabelCancel }}</a>
+    <button class="button is-light is-danger level-item" form="delete">{{ .LabelDelete }}</button>
   </div>
   <div class="level-right">
     <button class="button is-primary level-item" form="update">{{ .UpdateButtonLabel }}</button>
@@ -244,20 +280,26 @@
     </div>
     {{- range .PaperKeys -}}
       <a class="panel-block" href="update?id={{ .ID }}">
-        <span class="panel-icon">
+        <span class="panel-icon ml-3 mr-5">
           <strong aria-hidden="true">🔑</strong>
         </span>
-        {{- .Name -}}
-        {{- if .LastAcceptedAtFull -}}
-        &nbsp;(used)
-        {{- else -}}
-          &nbsp;<time datetime="{{ .CreatedAtFull }}">({{- .CreatedAt -}})</time>
-        {{- end -}}
+        <div>
+          <h2 class="subtitle has-text-weight-bold m-0">
+            {{- .Name -}}
+          </h2>
+          <p class="tag">
+            {{- if .LastAcceptedAtFull -}}
+              used
+            {{- else -}}
+              <time datetime="{{ .CreatedAtFull }}">{{- .CreatedAt -}}</time>
+            {{- end -}}
+          </p>
+        </div>
       </a>
     </div>
     {{- end -}}
     <div class="panel-block is-justify-content-center">
-      <a href="create" class="button">⊕ {{ .LabelCreate }}</a>
+      <a href="create" class="button">{{ .LabelCreate }}</a>
     </div>
   </section>
 {{ end }}

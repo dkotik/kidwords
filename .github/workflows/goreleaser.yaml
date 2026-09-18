@@ -3,7 +3,7 @@ name: goreleaser
 on:
   push:
     tags:
-      - "v*"
+      - "cmd/kidwords/v*"
 
 permissions:
   contents: write
