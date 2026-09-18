@@ -32,6 +32,13 @@ func TestMain(m *testing.M) {
 		if err != nil {
 			panic(err)
 		}
+
+		// inject WASM into mux
+		err = NewWebAssemblyHandler(mux.(*http.ServeMux))
+		if err != nil {
+			panic(err)
+		}
+
 		_ = http.ListenAndServe(
 			fmt.Sprintf("localhost:%d", *livePort),
 			mux,

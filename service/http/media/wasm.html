@@ -1,0 +1,30 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Go WebAssembly Demo</title>
+    <!-- Include the Go runtime bridge -->
+    <script src="wasm_exec.js"></script>
+    <script>
+        // Instantiate the Go runtime class provided by wasm_exec.js
+        const go = new Go();
+
+        // Stream, compile, and run the Wasm module
+        WebAssembly.instantiateStreaming(fetch("wkdw.v0.wasm"), go.importObject)
+            .then((result) => {
+                go.run(result.instance);
+                console.log("Wasm loaded successfully.");
+
+                // Call the function exposed by Go
+                const calculation = window.goAdd(15, 30);
+                console.log("Result from Go function:", calculation);
+            })
+            .catch((err) => {
+                console.error("Error loading Wasm:", err);
+            });
+    </script>
+</head>
+<body>
+    <h1>Open your browser console to see the Go output!</h1>
+</body>
+</html>
