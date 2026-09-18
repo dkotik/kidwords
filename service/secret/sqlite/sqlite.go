@@ -25,26 +25,33 @@ const SecretsTableFields = `
       updated_at          TEXT NOT NULL,
       last_accepted_at    TEXT`
 
-var _ secret.Repository = (*sqRepository)(nil) // interface satisfaction
-
 type sqRepository struct {
-	mu           *sync.Mutex
-	conn         *sqlite.Conn
-	stmtCreate   *sqlite.Stmt
-	stmtRetrieve *sqlite.Stmt
-	stmtUpdate   *sqlite.Stmt
-	stmtDelete   *sqlite.Stmt
-	stmtList     *sqlite.Stmt
+	mu                      *sync.Mutex
+	conn                    *sqlite.Conn
+	stmtCreate              *sqlite.Stmt
+	stmtRetrieve            *sqlite.Stmt
+	stmtUpdate              *sqlite.Stmt
+	stmtDelete              *sqlite.Stmt
+	stmtList                *sqlite.Stmt
+	stmtCreateUser          *sqlite.Stmt
+	stmtRetrieveUser        *sqlite.Stmt
+	stmtRetrieveUserByName  *sqlite.Stmt
+	stmtRetrieveUserByEmail *sqlite.Stmt
+	stmtUpdateUser          *sqlite.Stmt
+	stmtDeleteUser          *sqlite.Stmt
 }
 
-func New(conn *sqlite.Conn, withOptions ...Option) (s *sqRepository, err error) {
+func New(conn *sqlite.Conn, withOptions ...Option) (_ interface {
+	secret.Repository
+	secret.UserRepository
+}, err error) {
 	if conn == nil {
 		return nil, errors.New("cannot use a <nil> database connection")
 	}
 	o := &options{}
 	for _, option := range append(
 		withOptions,
-		withDefaultTableName(),
+		withDefaultTableNames(),
 		withDefaultSecretType(),
 	) {
 		if err = option(o); err != nil {
@@ -56,16 +63,16 @@ func New(conn *sqlite.Conn, withOptions ...Option) (s *sqRepository, err error) 
 		return nil, fmt.Errorf("cannot create the tables: %w", err)
 	}
 
-	s = &sqRepository{
+	s := &sqRepository{
 		mu:   &sync.Mutex{},
 		conn: conn,
 	}
 
-	o.TableName = escapeIdentifier(o.TableName)
+	secretsTableName := escapeIdentifier(o.SecretsTableName)
 	if s.stmtCreate, err = conn.Prepare(
 		fmt.Sprintf(`
       INSERT INTO %s(id, user_id, name, type, salted_hash, fingerprint, created_at, updated_at) VALUES(?, ?, ?, ?, ?, ?, ?, ?)
-    `, o.TableName),
+    `, secretsTableName),
 	); err != nil {
 		return nil, err
 	}
@@ -73,14 +80,14 @@ func New(conn *sqlite.Conn, withOptions ...Option) (s *sqRepository, err error) 
 	if s.stmtRetrieve, err = conn.Prepare(
 		fmt.Sprintf(`
       SELECT user_id, name, type, salted_hash, fingerprint, created_at, updated_at, last_accepted_at
-      FROM %s WHERE id=?`, o.TableName),
+      FROM %s WHERE id=?`, secretsTableName),
 	); err != nil {
 		return nil, err
 	}
 
 	if s.stmtUpdate, err = conn.Prepare(
 		fmt.Sprintf(`
-      UPDATE %s SET name=?, type=?, salted_hash=?, fingerprint=?, created_at=?, updated_at=?, last_accepted_at=? WHERE id=?`, o.TableName),
+      UPDATE %s SET name=?, type=?, salted_hash=?, fingerprint=?, created_at=?, updated_at=?, last_accepted_at=? WHERE id=?`, secretsTableName),
 	); err != nil {
 		return nil, err
 	}
@@ -88,13 +95,50 @@ func New(conn *sqlite.Conn, withOptions ...Option) (s *sqRepository, err error) 
 	if s.stmtList, err = conn.Prepare(
 		fmt.Sprintf(`
       SELECT id, name, type, salted_hash, fingerprint, created_at, updated_at, last_accepted_at
-      FROM %s WHERE user_id=? OR 1`, o.TableName),
+      FROM %s WHERE user_id=? OR 1`, secretsTableName),
 	); err != nil {
 		return nil, err
 	}
 
 	if s.stmtDelete, err = conn.Prepare(
-		fmt.Sprintf(`DELETE FROM %s WHERE id=?`, o.TableName),
+		fmt.Sprintf(`DELETE FROM %s WHERE id=?`, secretsTableName),
+	); err != nil {
+		return nil, err
+	}
+
+	userTableName := escapeIdentifier(o.UsersTableName)
+	if s.stmtCreateUser, err = conn.Prepare(
+		fmt.Sprintf(`INSERT INTO %s (id, name, password_hash, email, email_verified, created_at, updated_at, active_at) VALUES (?, ?, ?, ?, ?, ?, ?, ?)`, userTableName),
+	); err != nil {
+		return nil, err
+	}
+
+	if s.stmtRetrieveUser, err = conn.Prepare(
+		fmt.Sprintf(`SELECT id, name, password_hash, email, email_verified, created_at, updated_at, active_at FROM %s WHERE id=?`, userTableName),
+	); err != nil {
+		return nil, err
+	}
+
+	if s.stmtRetrieveUserByName, err = conn.Prepare(
+		fmt.Sprintf(`SELECT id, name, password_hash, email, email_verified, created_at, updated_at, active_at FROM %s WHERE name=?`, userTableName),
+	); err != nil {
+		return nil, err
+	}
+
+	if s.stmtRetrieveUserByEmail, err = conn.Prepare(
+		fmt.Sprintf(`SELECT id, name, password_hash, email, email_verified, created_at, updated_at, active_at FROM %s WHERE email=?`, userTableName),
+	); err != nil {
+		return nil, err
+	}
+
+	if s.stmtUpdateUser, err = conn.Prepare(
+		fmt.Sprintf(`UPDATE %s SET name=?, password_hash=?, email=?, email_verified=?, created_at=?, updated_at=?, active_at=? WHERE id=?`, userTableName),
+	); err != nil {
+		return nil, err
+	}
+
+	if s.stmtDeleteUser, err = conn.Prepare(
+		fmt.Sprintf(`DELETE FROM %s WHERE id=?`, userTableName),
 	); err != nil {
 		return nil, err
 	}

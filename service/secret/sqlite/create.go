@@ -3,6 +3,7 @@ package sqlite
 import (
 	"context"
 	"errors"
+	"strings"
 	"time"
 	"uuid"
 
@@ -54,6 +55,9 @@ func (r *sqRepository) Create(ctx context.Context, s secret.Secret) (ID string, 
 				}
 				return s.ID, secret.ErrDuplicateSecretID
 			case lib.SQLITE_CONSTRAINT_UNIQUE:
+				if strings.HasSuffix(err.Error(), ".fingerprint") {
+					return ID, secret.ErrDuplicateFingerprint
+				}
 				return s.ID, secret.ErrDuplicateSecretName
 			default:
 				return ID, err

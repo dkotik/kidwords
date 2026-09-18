@@ -21,6 +21,8 @@ type Repository interface {
 
 type User interface {
 	GetID() string
+	GetName() string
+	GetPasswordHash() string
 }
 
 type UserRepository interface {

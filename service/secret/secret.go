@@ -12,9 +12,10 @@ const (
 )
 
 var (
-	ErrDuplicateSecretID   = errors.New("duplicate secret ID")
-	ErrDuplicateSecretName = errors.New("duplicate secret name")
-	ErrNotFound            = errors.New("secret not found")
+	ErrDuplicateSecretID    = errors.New("duplicate secret ID")
+	ErrDuplicateSecretName  = errors.New("duplicate secret name")
+	ErrDuplicateFingerprint = errors.New("duplicate fingerprint")
+	ErrNotFound             = errors.New("secret not found")
 )
 
 type Secret struct {

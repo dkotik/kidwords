@@ -90,8 +90,9 @@ func NewRepositoryTest(r Repository) func(*testing.T) {
 		s3 := s2
 		s3.ID = ""
 		s3.Name = "third secret"
+		s3.Fingerprint = []byte(s3.Name)
 		if s3.ID, err = r.Create(ctx, s3); err != nil {
-			t.Fatal(err)
+			t.Fatal("cannot create third secret:", err)
 		}
 		s3, err = r.Retrieve(ctx, secret.ID)
 		if err != nil {
@@ -128,5 +129,19 @@ func NewRepositoryTest(r Repository) func(*testing.T) {
 		// if err = s3.IsEqual(all[1]); err != nil {
 		// 	t.Fatal(err)
 		// }
+	}
+}
+
+func NewUserRepositoryTest(r UserRepository, u User) func(*testing.T) {
+	return func(t *testing.T) {
+		ctx := t.Context()
+		retrieved, err := r.RetrieveUserByName(ctx, u.GetName())
+		if err != nil {
+			t.Fatal(err)
+		}
+		if retrieved.GetID() != u.GetID() {
+			t.Fatalf("retrieved user ID does not match: expected %q, got %q", u.GetID(), retrieved.GetID())
+		}
+
 	}
 }
