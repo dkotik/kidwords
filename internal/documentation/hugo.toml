@@ -1,0 +1,32 @@
+baseURL = '/'
+locale = 'en-US'
+title = 'Kid Words'
+disableKinds = ['taxonomy', 'term']
+
+author = 'Kid Words'
+
+[menu]
+  [[menu.main]]
+    name = 'Overview'
+    pageRef = '/'
+    weight = 10
+  [[menu.main]]
+    name = 'Benefits'
+    pageRef = '/benefits'
+    weight = 20
+  [[menu.main]]
+    name = 'Using as Library'
+    pageRef = '/library'
+    weight = 30
+  [[menu.main]]
+    name = 'Command Line Tool'
+    pageRef = '/command-line'
+    weight = 40
+  [[menu.main]]
+    name = 'Specification'
+    pageRef = '/specification'
+    weight = 50
+  [[menu.main]]
+    name = 'Planned Features'
+    pageRef = '/planned-features'
+    weight = 60

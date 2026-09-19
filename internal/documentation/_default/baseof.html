@@ -1,0 +1,51 @@
+<!doctype html>
+<html lang="{{ site.Language.Locale | default `en-US` }}">
+  <head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>{{ if not .IsHome }}{{ .Title }} · {{ end }}{{ site.Title }}</title>
+    <link rel="stylesheet" href="{{ `bulma.min.css` | relURL }}">
+  </head>
+  <body>
+    <header class="navbar" role="banner">
+      <div class="container">
+        <div class="navbar-brand">
+          <a class="navbar-item has-text-weight-bold" href="{{ `/` | relURL }}">Kid Words</a>
+        </div>
+        <nav class="navbar-menu is-active" aria-label="Main navigation">
+          <div class="navbar-start">
+            {{ range site.Menus.main }}
+              <a class="navbar-item{{ if $.IsMenuCurrent `main` . }} is-active{{ end }}" href="{{ .URL | relURL }}">{{ .Name }}</a>
+            {{ end }}
+          </div>
+        </nav>
+      </div>
+    </header>
+
+    <main class="section">
+      <div class="container">
+        <div class="columns">
+          <aside class="column is-one-quarter">
+            <nav class="menu" aria-label="Documentation navigation">
+              <p class="menu-label">Documentation</p>
+              <ul class="menu-list">
+                {{ range site.Menus.main }}
+                  <li><a class="{{ if $.IsMenuCurrent `main` . }}is-active{{ end }}" href="{{ .URL | relURL }}">{{ .Name }}</a></li>
+                {{ end }}
+              </ul>
+            </nav>
+          </aside>
+          <article class="column content">
+            {{ block "main" . }}{{ end }}
+          </article>
+        </div>
+      </div>
+    </main>
+
+    <footer class="footer">
+      <div class="content has-text-centered">
+        <p><strong>Kid Words</strong>, beta documentation.</p>
+      </div>
+    </footer>
+  </body>
+</html>
