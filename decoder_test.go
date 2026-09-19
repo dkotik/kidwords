@@ -45,9 +45,12 @@ func TestDecoder(t *testing.T) {
 	// fmt.Println("===")
 	// t.Fail()
 
-	shards, err := decoder.Decode(string(axed))
-	if err != nil {
-		t.Fatal(err)
+	shards, errs, ok := decoder.Decode(string(axed))
+	for _, err := range errs {
+		t.Error(err)
+	}
+	if !ok {
+		t.Fatal("shard decoding failed")
 	}
 
 	decoded, err := Combine(shards)

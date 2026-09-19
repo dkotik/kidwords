@@ -1,11 +1,26 @@
 package kidwords
 
 import (
-	"errors"
 	"fmt"
 	"strconv"
 	"unicode/utf8"
 )
+
+type InvalidShardIndexError struct {
+	Token string
+}
+
+func (e InvalidShardIndexError) Error() string {
+	return fmt.Sprintf("invalid shard index: %s", e.Token)
+}
+
+type UnknownWordError struct {
+	Token string
+}
+
+func (e UnknownWordError) Error() string {
+	return fmt.Sprintf("word is neither in the noun nor in the verb dictionary: %s", e.Token)
+}
 
 type decoder struct {
 	Nouns map[string]byte
@@ -13,7 +28,7 @@ type decoder struct {
 }
 
 type Decoder interface {
-	Decode(string) ([]Shard, error)
+	Decode(string) ([]Shard, []error, bool)
 }
 
 func NewDecoder(nouns, verbs Dictionary) Decoder {
@@ -31,11 +46,12 @@ const (
 	tokenIndex
 )
 
-func (d *decoder) Decode(data string) (ss []Shard, err error) {
+func (d *decoder) Decode(data string) (ss []Shard, errs []error, ok bool) {
 	var (
 		n            int
 		index        int
 		highestIndex int
+		c            byte
 		token        []byte
 		tokenKind    tokenKind
 		nouns        = make(map[int][]byte)
@@ -49,33 +65,35 @@ func (d *decoder) Decode(data string) (ss []Shard, err error) {
 		}
 		if tokenKind == tokenIndex {
 			i, err := strconv.Atoi(string(token))
-			if err != nil {
-				shardErrors = append(shardErrors, fmt.Errorf("invalid shard index: %s", token))
-			} else if i < 1 || i > 255 {
-				shardErrors = append(shardErrors, fmt.Errorf("shard index out of range: %d", index))
+			if err != nil || (i < 1 || i > 255) {
+				errs = append(errs, InvalidShardIndexError{
+					Token: string(token),
+				})
 			} else {
 				index = i
 				if index > highestIndex {
 					highestIndex = index
 				}
 			}
-			token = nil
-			return
+			goto clear
 		}
-		c, ok := d.Nouns[string(token)]
+		c, ok = d.Nouns[string(token)]
 		if ok {
 			nouns[index] = append(nouns[index], c)
-			token = nil
-			return
+			goto clear
 		}
 		c, ok = d.Verbs[string(token)]
 		if ok {
 			// fmt.Println(index, "verb", string(token))
 			verbs[index] = append(verbs[index], c)
-			token = nil
-			return
+			goto clear
 		}
-		shardErrors = append(shardErrors, fmt.Errorf("unknown word: %s", token))
+		errs = append(errs, UnknownWordError{
+			Token: string(token),
+		})
+
+	clear:
+		token = nil
 	}
 
 	runeBuf := make([]byte, 4)
@@ -109,22 +127,21 @@ func (d *decoder) Decode(data string) (ss []Shard, err error) {
 	}
 	consumeToken() // last word
 	if highestIndex == 0 {
-		return nil, fmt.Errorf("no shards found")
+		return ss, errs, false
 	}
 
 	ss = make([]Shard, 0, len(nouns))
 	for index, ns := range nouns {
-		vs, ok := verbs[index]
+		token, ok = verbs[index]
 		if !ok {
 			continue
 		}
-		shard, err := NewShard(uint8(index), ns, vs)
+		shard, err := NewShard(uint8(index), ns, token)
 		if err != nil {
 			shardErrors = append(shardErrors, err)
 			continue
 		}
-		// fmt.Println(index, len(share))
 		ss = append(ss, shard)
 	}
-	return ss, errors.Join(shardErrors...)
+	return ss, errs, true
 }

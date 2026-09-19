@@ -1,0 +1,103 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="dark">
+<head>
+    <title>WebAssembly Demo</title>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width,initial-scale=1" />
+    <script src="htmx.min.js"></script>
+    <link rel="stylesheet" href="bulma.min.css">
+    <!-- Include the Go runtime bridge -->
+    <script src="wasm_exec.js"></script>
+    <script>
+        // Instantiate the Go runtime class provided by wasm_exec.js
+        const go = new Go();
+
+        const splitInput = () => {
+          const input = document.getElementById(`secret`)
+          const output = document.getElementById(`shards`)
+          if (!window.splitSecret) {
+            output.value = "still loading..."
+            return
+          }
+          output.value = window.splitSecret(input.value, 12, 6)
+        }
+
+        const combineInput = () => {
+          const input = document.getElementById(`shards`)
+          const output = document.getElementById(`recovered`)
+          if (!window.splitSecret) {
+            output.value = "still loading..."
+            return
+          }
+          output.value = window.combineShards(input.value)
+        }
+
+        // Stream, compile, and run the Wasm module
+        WebAssembly.instantiateStreaming(fetch("wkdw.v0.wasm"), go.importObject)
+            .then((result) => {
+                go.run(result.instance);
+                console.log("Wasm loaded successfully.");
+
+                // Call the function exposed by Go
+                const calculation = window.goAdd(15, 31);
+                console.log("Result from Go function:", calculation);
+
+                console.log(window.splitSecret("wowowow", 12, 6))
+            })
+            .catch((err) => {
+                console.error("Error loading Wasm:", err);
+            });
+    </script>
+</head>
+<body>
+  <main class="container">
+    <form class="form" action="#split">
+      <fieldset class="section">
+        <h1 class="title">Kidwords Durable Paper Key Demo</h1>
+        <div class="field has-addons">
+          <div class="control is-expanded">
+            <input id="secret" class="input" name="secret" value="password" />
+          </div>
+          <div class="control">
+            <button class="button is-link" onclick="splitInput()" type="button">Split Secret Into Shards</button>
+          </div>
+        </div>
+        <div class="field">
+          <textarea id="shards" class="textarea is-family-monospace" rows="20"></textarea>
+        </div>
+        <script>
+          const damageRandomShard = () => {
+            const shards = document.getElementById(`shards`)
+            const eachIndex = []
+            for (const match of shards.value.matchAll(/\d+/g)) {
+              eachIndex.push(match)
+            }
+
+            const randomIndex = eachIndex[Math.floor(Math.random() * eachIndex.length)]
+            shards.value = shards.value.replace(
+              (new RegExp(`\\d+(\\s+[A-Za-z]+)*`, "g")),
+              (match) => {
+                if (!match.startsWith(randomIndex+" ")) {
+                  return match
+                }
+                return `🔥🔥🔥🔥🔥🔥🔥🔥🔥🔥`
+              }
+            )
+          }
+        </script>
+        <div class="field has-addons">
+          <div class="control is-expanded">
+            <input id="recovered" class="input" name="secret" value="" placeholder="..." />
+          </div>
+          <div class="control">
+            <button class="button is-success" onclick="combineInput()" type="button">Recover Secret from Shards</button>
+          </div>
+          <div class="control">
+            <button class="button is-danger" onclick="damageRandomShard()" type="button">Damage Random Shard</button>
+          </div>
+        </div>
+      </fieldset>
+    </form>
+  </main>
+</body>
+</html>

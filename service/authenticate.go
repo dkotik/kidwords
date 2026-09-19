@@ -173,9 +173,12 @@ func (s *Service) AuthenticateUserWithPaperKey(
 	userID string,
 	key string,
 ) (err error) {
-	shards, err := s.decoder.Decode(key)
-	if err != nil {
-		return err
+	shards, _, ok := s.decoder.Decode(key)
+	if !ok {
+		return AuthenticationError{
+			UserID: userID,
+			Cause:  fmt.Errorf("invalid paper key"),
+		}
 	}
 
 	keys, err := rp.List(ctx, userID)

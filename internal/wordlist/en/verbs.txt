@@ -237,6 +237,7 @@ lack
 leap
 dial
 pity
+bite
 mill
 wipe
 miss
@@ -247,6 +248,7 @@ rest
 race
 hear
 bash
+risk
 abet
 seep
 surf
@@ -263,3 +265,5 @@ hope
 tout
 gird
 mine
+wish
+deal
